@@ -38,6 +38,16 @@ impl Scanner {
                                     self.line));
     }
 
+    fn matches(&mut self, expected: char) -> bool {
+        if self.is_end() ||
+            self.source.chars().nth(self.current).unwrap() != expected {
+                false
+            } else {
+                self.current += 1;
+                true
+            }
+    }
+
     fn scan_token(&mut self) {
         let c: char = self.advance();
         match c {
@@ -48,7 +58,15 @@ impl Scanner {
             '+' => self.add_token(TokenType::Plus),
             '/' => self.add_token(TokenType::Slash),
             '*' => self.add_token(TokenType::Star),
-             _  => println!("Unrecognized character"),
+            '!' => {
+                let new_type = if self.matches('=') {
+                    TokenType::BangEqual
+                } else {
+                    TokenType::Bang
+                };
+                self.add_token(new_type);
+            },
+             _  => self.add_token(TokenType::Unknown),
         }
     }
 
