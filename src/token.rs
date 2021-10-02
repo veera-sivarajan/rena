@@ -13,4 +13,8 @@ pub struct Token {
 }
 
 impl Token {
+    pub fn new(token_type: TokenType, lexeme: String, line: i32) -> Token {
+        Token { token_type, lexeme, line }
+    }
+}
     
