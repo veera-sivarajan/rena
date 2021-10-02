@@ -19,11 +19,17 @@ fn get_input() -> String {
 
 fn run(source: String) {
     let mut scanner = scanner::Scanner::new(source);
-    let tokens = scanner.scan_token();
+    let tokens = scanner.scan_tokens();
+
+    for token in tokens {
+        println!{"{}", token.token_type.to_string()};
+    }
+        
 }
 
 fn main() {
     loop {
         let input = get_input(); 
+        run(input);
     }
 }
