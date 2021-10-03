@@ -1,4 +1,5 @@
 use crate::token::{Token, TokenType};
+use std::str::FromStr;
 
 pub struct Scanner {
     source: String,
@@ -21,12 +22,6 @@ impl Scanner {
 
     fn is_end(&self) -> bool {
         self.current >= self.source.len()
-    }
-
-    fn advance(&mut self) -> char {
-        self.current += 1;
-        let char_vec: Vec<char> = self.source.chars().collect();
-        char_vec[self.current - 1]
     }
 
     fn add_token(&mut self, token_type: TokenType) {
@@ -66,8 +61,64 @@ impl Scanner {
                 };
                 self.add_token(new_type);
             },
-             _  => self.add_token(TokenType::Unknown),
+            '=' => {
+                let new_type = if self.matches('=') {
+                    TokenType::EqualEqual
+                } else {
+                    TokenType::Equal
+                };
+                self.add_token(new_type);
+            },
+            '>' => {
+                let new_type = if self.matches('=') {
+                    TokenType::GreaterEqual
+                } else {
+                    TokenType::Greater
+                };
+                self.add_token(new_type);
+            },
+            '<' => {
+                let new_type = if self.matches('=') {
+                    TokenType::LessEqual
+                } else {
+                    TokenType::Less
+                };
+                self.add_token(new_type);
+            },
+            ' ' | '\r' | '\t' => {},
+            _  => {
+                if c.is_digit(10) {
+                    self.number()
+                } else {
+                    self.add_token(TokenType::Unknown)
+                }
+            }
         }
+    }
+
+    fn advance(&mut self) -> char {
+        let current_char = self.source.chars().nth(self.current).unwrap();
+        self.current += 1;
+
+        current_char
+    }
+
+    fn peek(&self) -> char {
+        if self.is_end() {
+            '\0'
+        } else {
+            self.source.chars().nth(self.current).unwrap()
+        }
+    }
+
+    fn number(&mut self) {
+        while self.peek().is_digit(10) {
+            self.advance();
+        }
+
+        let sub_string = &self.source[self.start..self.current];
+        let num = f64::from_str(sub_string).unwrap();
+        self.add_token(TokenType::Number(num));
     }
 
     pub fn scan_tokens(&mut self) -> Vec<Token> {
