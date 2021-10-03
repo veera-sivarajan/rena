@@ -30,6 +30,9 @@ fn run(source: String) {
 fn main() {
     loop {
         let input = get_input(); 
+        if input == "exit" {
+            break;
+        }
         run(input);
     }
 }

@@ -1,5 +1,7 @@
 use crate::token::{Token, TokenType};
 use std::str::FromStr;
+use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 pub struct Scanner {
     source: String,
@@ -7,6 +9,21 @@ pub struct Scanner {
     start: usize,
     current: usize,
     line: i32,
+}
+
+lazy_static! {
+    static ref KEYWORDS: HashMap<String, TokenType> = {
+        let mut hash_map = HashMap::new();
+        hash_map.insert("true".to_owned(), TokenType::True);
+        hash_map.insert("false".to_owned(), TokenType::False);
+        hash_map.insert("print".to_owned(), TokenType::Print);
+        hash_map
+    };
+}
+
+
+fn is_alphanumeric(c: char) -> bool {
+    c.is_ascii_alphanumeric() || c == '_'
 }
 
 impl Scanner {
@@ -85,16 +102,19 @@ impl Scanner {
                 };
                 self.add_token(new_type);
             },
-            ' ' | '\r' | '\t' => {},
+            ' ' | '\r' | '\t' => {}, // skip whitespaces, tab and enter?
             _  => {
                 if c.is_digit(10) {
                     self.number()
+                } else if is_alphanumeric(c) {
+                    self.identifier()
                 } else {
                     self.add_token(TokenType::Unknown)
                 }
             }
         }
     }
+
 
     fn advance(&mut self) -> char {
         let current_char = self.source.chars().nth(self.current).unwrap();
@@ -119,6 +139,21 @@ impl Scanner {
         let sub_string = &self.source[self.start..self.current];
         let num = f64::from_str(sub_string).unwrap();
         self.add_token(TokenType::Number(num));
+    }
+
+    fn identifier(&mut self) {
+        while is_alphanumeric(self.peek()) {
+            self.advance();
+        }
+        let sub_string = &self.source[self.start..self.current];
+        let token_type = {
+            match KEYWORDS.get(sub_string) {
+                None => TokenType::Identifier,
+                Some(t_type) => *t_type,
+            }
+        };
+       
+        self.add_token(token_type);
     }
 
     pub fn scan_tokens(&mut self) -> Vec<Token> {
