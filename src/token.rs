@@ -1,12 +1,12 @@
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum TokenType {
     LeftParen, RightParen, Dot, Minus, Plus, Slash, Star,
-    EOF,
+    Semicolon, EOF,
 
     Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual,
     Less, LessEqual,
 
-    Number(f64), True, False, Unknown, Print, Identifier,
+    Number(f64), True, False, Unknown, Print, Identifier, Literal(String), 
 }
 
 #[derive(Clone)]
@@ -26,28 +26,30 @@ impl Token {
 impl TokenType {
     pub fn to_string(&self) -> String {
         match self {
-            TokenType::LeftParen     => String::from("LeftParen"),
-            TokenType::RightParen    => String::from("RightParen"),
-            TokenType::Dot           => String::from("Dot"),
-            TokenType::Minus         => String::from("Minus"),
-            TokenType::Plus          => String::from("Plus"),
-            TokenType::Slash         => String::from("Slash"),
-            TokenType::Star          => String::from("Star"),
-            TokenType::Bang          => String::from("Bang"),
-            TokenType::BangEqual     => String::from("BangEqual"),
-            TokenType::Equal         => String::from("Equal"),
-            TokenType::EqualEqual    => String::from("EqualEqual"),
-            TokenType::Greater       => String::from("Greater"),
-            TokenType::GreaterEqual  => String::from("GreaterEqual"),
-            TokenType::Less          => String::from("Less"),
-            TokenType::LessEqual     => String::from("LessEqual"),
-            TokenType::Number(float) => format!("Number: {}", float),
-            TokenType::True          => String::from("True"),
-            TokenType::False         => String::from("False"),
-            TokenType::EOF           => String::from("EOF"),
-            TokenType::Unknown       => String::from("Unknown"),
-            TokenType::Print         => String::from("Print"),
-            TokenType::Identifier    => String::from("Identifier"),
+            TokenType::LeftParen      => String::from("LeftParen"),
+            TokenType::RightParen     => String::from("RightParen"),
+            TokenType::Dot            => String::from("Dot"),
+            TokenType::Minus          => String::from("Minus"),
+            TokenType::Plus           => String::from("Plus"),
+            TokenType::Slash          => String::from("Slash"),
+            TokenType::Star           => String::from("Star"),
+            TokenType::Semicolon      => String::from("Semicolon"),
+            TokenType::Bang           => String::from("Bang"),
+            TokenType::BangEqual      => String::from("BangEqual"),
+            TokenType::Equal          => String::from("Equal"),
+            TokenType::EqualEqual     => String::from("EqualEqual"),
+            TokenType::Greater        => String::from("Greater"),
+            TokenType::GreaterEqual   => String::from("GreaterEqual"),
+            TokenType::Less           => String::from("Less"),
+            TokenType::LessEqual      => String::from("LessEqual"),
+            TokenType::Number(float)  => format!("Number: {}", float),
+            TokenType::True           => String::from("True"),
+            TokenType::False          => String::from("False"),
+            TokenType::EOF            => String::from("EOF"),
+            TokenType::Unknown        => String::from("Unknown"),
+            TokenType::Print          => String::from("Print"),
+            TokenType::Identifier     => String::from("Identifier"),
+            TokenType::Literal(value) => format!("String: {}", value),
         }
     }
 }

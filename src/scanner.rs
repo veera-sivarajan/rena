@@ -70,6 +70,7 @@ impl Scanner {
             '+' => self.add_token(TokenType::Plus),
             '/' => self.add_token(TokenType::Slash),
             '*' => self.add_token(TokenType::Star),
+            ';' => self.add_token(TokenType::Semicolon),
             '!' => {
                 let new_type = if self.matches('=') {
                     TokenType::BangEqual
@@ -103,14 +104,15 @@ impl Scanner {
                 self.add_token(new_type);
             },
             ' ' | '\r' | '\t' => {}, // skip whitespaces, tab and enter?
-            _  => {
-                if c.is_digit(10) {
-                    self.number()
-                } else if is_alphanumeric(c) {
-                    self.identifier()
-                } else {
-                    self.add_token(TokenType::Unknown)
-                }
+            '"' => self.scan_string(),
+             _  => {
+                 if c.is_digit(10) {
+                     self.number()
+                 } else if is_alphanumeric(c) {
+                     self.identifier()
+                 } else {
+                     self.add_token(TokenType::Unknown)
+                 }
             }
         }
     }
@@ -141,6 +143,19 @@ impl Scanner {
         self.add_token(TokenType::Number(num));
     }
 
+    fn scan_string(&mut self) {
+        while self.peek() != '"' && !self.is_end() {
+            self.advance();
+        }
+        if !self.is_end() {
+            self.advance();
+        } else {
+            println!("Error: Unterminated String");
+        }
+        let sub_string = &self.source[self.start..self.current];
+        self.add_token(TokenType::Literal(sub_string.to_string()));
+    }
+
     fn identifier(&mut self) {
         while is_alphanumeric(self.peek()) {
             self.advance();
@@ -149,7 +164,7 @@ impl Scanner {
         let token_type = {
             match KEYWORDS.get(sub_string) {
                 None => TokenType::Identifier,
-                Some(t_type) => *t_type,
+                Some(t_type) => t_type.clone(),
             }
         };
        
