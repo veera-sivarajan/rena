@@ -23,10 +23,12 @@ fn run(source: String) {
     let mut scanner = scanner::Scanner::new(source);
     let tokens = scanner.scan_tokens();
 
-    for token in tokens {
-        println!{"{}", token.token_type.to_string()};
-    }
-        
+    // for token in tokens {
+    //     println!{"{}", token.token_type.to_string()};
+    // }
+
+    let mut parser = parser::Parser::new(tokens);
+    let ast_node = parser.parse();
 }
 
 fn main() {
