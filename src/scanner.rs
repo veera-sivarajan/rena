@@ -21,7 +21,6 @@ lazy_static! {
     };
 }
 
-
 fn is_alphanumeric(c: char) -> bool {
     c.is_ascii_alphanumeric() || c == '_'
 }
@@ -117,7 +116,6 @@ impl Scanner {
         }
     }
 
-
     fn advance(&mut self) -> char {
         let current_char = self.source.chars().nth(self.current).unwrap();
         self.current += 1;
@@ -180,7 +178,6 @@ impl Scanner {
         self.add_token(TokenType::EOF);
         self.tokens.clone()
     }
-
 }
             
             

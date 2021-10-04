@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Copy)]
 pub enum TokenType {
     LeftParen, RightParen, Dot, Minus, Plus, Slash, Star,
     Semicolon, EOF,
