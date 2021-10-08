@@ -138,7 +138,7 @@ impl Scanner {
 
         let sub_string = &self.source[self.start..self.current];
         let num = f64::from_str(sub_string).unwrap();
-        self.add_token(TokenType::Number(num));
+        self.add_token(TokenType::Number);
     }
 
     fn scan_string(&mut self) {

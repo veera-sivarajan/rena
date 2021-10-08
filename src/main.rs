@@ -4,6 +4,7 @@ mod err;
 mod parser;
 
 use crate::scanner::Scanner;
+use crate::parser::{Expr, BinaryExpr};
 
 use std::io::stdout;
 use std::io::Write;
@@ -19,6 +20,16 @@ fn get_input() -> String {
     input
 }
 
+fn print_ast(expr: &Expr) {
+    match expr {
+        Expr::Number(float) => println!("{}", float),
+        Expr::String(str_value) => println!("{}", str_value),
+        Expr::Boolean(value) => println!("{}", value),
+        Expr::Binary(b_value) => println!("({} {} {})", b_value.oper.lexeme,
+                                        *b_value.left, *b_value.right),
+    }
+}
+
 fn run(source: String) {
     let mut scanner = scanner::Scanner::new(source);
     let tokens = scanner.scan_tokens();
@@ -29,6 +40,12 @@ fn run(source: String) {
 
     let mut parser = parser::Parser::new(tokens);
     let ast_node = parser.parse();
+    match ast_node {
+        Ok(expr) => print_ast(&expr),
+        Err(lox_error) => {
+            println!("parser error");
+        },
+    }
 }
 
 fn main() {

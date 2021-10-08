@@ -1,4 +1,4 @@
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
     LeftParen, RightParen, Dot, Minus, Plus, Slash, Star,
     Semicolon, EOF,
@@ -6,10 +6,10 @@ pub enum TokenType {
     Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual,
     Less, LessEqual,
 
-    Number(f64), True, False, Unknown, Print, Identifier, Literal(String), 
+    Number, True, False, Unknown, Print, Identifier, Literal(String), 
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub lexeme: String,
@@ -42,7 +42,7 @@ impl TokenType {
             TokenType::GreaterEqual   => String::from("GreaterEqual"),
             TokenType::Less           => String::from("Less"),
             TokenType::LessEqual      => String::from("LessEqual"),
-            TokenType::Number(float)  => format!("Number: {}", float),
+            TokenType::Number         => format!("Number"),
             TokenType::True           => String::from("True"),
             TokenType::False          => String::from("False"),
             TokenType::EOF            => String::from("EOF"),
