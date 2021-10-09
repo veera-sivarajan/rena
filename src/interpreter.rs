@@ -1,15 +1,17 @@
-use crate::expr::{Expr, BinaryExpr, NumberExpr};
+use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr};
 use crate::token::TokenType;
 
 pub enum Value {
     Number(f64),
     Bool(bool),
+    String(String), 
 }
 
 fn stringify(result: Value) -> String {
     match result {
         Value::Number(num) => format!("{}", num),
         Value::Bool(tof) => format!("{}", tof),
+        Value::String(value) => format!("{}", value),
     }
 }
 
@@ -21,12 +23,38 @@ pub fn interpret(expression: Expr) {
 fn evaluate(expression: Expr) -> Value {
     match expression {
         Expr::Binary(expr) => intpt_binary(expr),
-        // Expr::Unary(expr)  => intpt_unary(expr),
+        Expr::Unary(expr)  => intpt_unary(expr),
         Expr::Number(expr) => intpt_number(expr),
-        // Expr::Boolean(expr) => intpt_boolean(expr),
-        // Expr::String(expr) => intpt_string(expr),
+        Expr::Boolean(expr) => intpt_boolean(expr),
+        Expr::String(expr) => intpt_string(expr),
+    }
+}
+
+fn intpt_unary(expression: UnaryExpr) -> Value {
+    let right = evaluate(*expression.right);
+    match expression.oper.token_type {
+        TokenType::Minus => {
+            match right {
+                Value::Number(num) => Value::Number(-num),
+                _ => Value::Number(0.0),
+            }
+        },
+        TokenType::Bang =>{
+            match right {
+                Value::Bool(value) => Value::Bool(!value),
+                _ => Value::Number(0.0),
+            }
+        },
         _ => Value::Number(0.0),
     }
+}
+
+fn intpt_boolean(expression: bool) -> Value {
+    Value::Bool(expression)
+}
+
+fn intpt_string(expression: String) -> Value {
+    Value::String(expression)
 }
 
 fn intpt_number(expression: NumberExpr) -> Value {
