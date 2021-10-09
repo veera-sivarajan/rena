@@ -3,6 +3,8 @@ mod token;
 mod err;
 mod parser;
 mod ast;
+mod interpreter;
+mod expr;
 
 use std::io::stdout;
 use std::io::Write;
@@ -29,7 +31,7 @@ fn run(source: String) {
     let mut parser = parser::Parser::new(tokens);
     let ast_node = parser.parse();
     match ast_node {
-        Ok(expr) => ast::print_ast(&expr),
+        Ok(expr) => interpreter::interpret(expr),
         Err(_lox_error) => {
             println!("parser error");
         },

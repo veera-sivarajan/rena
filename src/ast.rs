@@ -1,4 +1,4 @@
-use crate::parser::{Expr};
+use crate::expr::Expr;
 
 pub fn print_ast(expr: &Expr) {
     match expr {
