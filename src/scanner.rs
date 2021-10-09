@@ -1,5 +1,4 @@
 use crate::token::{Token, TokenType};
-use std::str::FromStr;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
@@ -136,8 +135,6 @@ impl Scanner {
             self.advance();
         }
 
-        let sub_string = &self.source[self.start..self.current];
-        let num = f64::from_str(sub_string).unwrap();
         self.add_token(TokenType::Number);
     }
 
@@ -150,8 +147,7 @@ impl Scanner {
         } else {
             println!("Error: Unterminated String");
         }
-        let sub_string = &self.source[self.start..self.current];
-        self.add_token(TokenType::Literal(sub_string.to_string()));
+        self.add_token(TokenType::Literal);
     }
 
     fn identifier(&mut self) {

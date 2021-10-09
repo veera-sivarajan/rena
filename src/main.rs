@@ -3,8 +3,7 @@ mod token;
 mod err;
 mod parser;
 
-use crate::scanner::Scanner;
-use crate::parser::{Expr, BinaryExpr};
+use crate::parser::{Expr};
 
 use std::io::stdout;
 use std::io::Write;
@@ -26,7 +25,7 @@ fn print_ast(expr: &Expr) {
         Expr::String(str_value) => println!("{}", str_value),
         Expr::Boolean(value) => println!("{}", value),
         Expr::Binary(b_value) => println!("({} {} {})", b_value.oper.lexeme,
-                                        *b_value.left, *b_value.right),
+                                          b_value.left, b_value.right),
     }
 }
 
@@ -42,7 +41,7 @@ fn run(source: String) {
     let ast_node = parser.parse();
     match ast_node {
         Ok(expr) => print_ast(&expr),
-        Err(lox_error) => {
+        Err(_lox_error) => {
             println!("parser error");
         },
     }

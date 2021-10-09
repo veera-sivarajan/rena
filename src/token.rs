@@ -6,7 +6,7 @@ pub enum TokenType {
     Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual,
     Less, LessEqual,
 
-    Number, True, False, Unknown, Print, Identifier, Literal(String), 
+    Number, True, False, Unknown, Print, Identifier, Literal, 
 }
 
 #[derive(Clone, Debug)]
@@ -24,7 +24,7 @@ impl Token {
 }
 
 impl TokenType {
-    pub fn to_string(&self) -> String {
+    pub fn _to_string(&self) -> String {
         match self {
             TokenType::LeftParen      => String::from("LeftParen"),
             TokenType::RightParen     => String::from("RightParen"),
@@ -49,7 +49,7 @@ impl TokenType {
             TokenType::Unknown        => String::from("Unknown"),
             TokenType::Print          => String::from("Print"),
             TokenType::Identifier     => String::from("Identifier"),
-            TokenType::Literal(value) => format!("String: {}", value),
+            TokenType::Literal        => format!("String"),
         }
     }
 }
