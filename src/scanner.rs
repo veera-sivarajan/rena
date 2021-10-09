@@ -147,7 +147,7 @@ impl Scanner {
         } else {
             println!("Error: Unterminated String");
         }
-        self.add_token(TokenType::Literal);
+        self.add_token(TokenType::StrLit);
     }
 
     fn identifier(&mut self) {
