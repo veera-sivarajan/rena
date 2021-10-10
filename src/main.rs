@@ -8,6 +8,7 @@ mod expr;
 
 use std::io::stdout;
 use std::io::Write;
+use std::error::Error;
 
 fn get_input() -> String {
     let mut input = String::new();
@@ -23,17 +24,20 @@ fn get_input() -> String {
 fn run(source: String) {
     let mut scanner = scanner::Scanner::new(source);
     let tokens = scanner.scan_tokens();
+    match tokens {
+        Ok(ref vector) => {},
+        Err(ref e) => {
+            println!("Error: {}", e.description());
+            return;
+        }
+    }
 
-    // for token in tokens {
-    //     println!{"{}", token.token_type.to_string()};
-    // }
-
-    let mut parser = parser::Parser::new(tokens);
+    let mut parser = parser::Parser::new(tokens.unwrap());
     let ast_node = parser.parse();
     match ast_node {
         Ok(expr) => interpreter::interpret(expr),
-        Err(_lox_error) => {
-            println!("parser error");
+        Err(lox_error) => {
+            println!("Error: {}", lox_error.description());
         },
     }
 }

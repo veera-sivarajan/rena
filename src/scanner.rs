@@ -1,6 +1,8 @@
 use crate::token::{Token, TokenType};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use crate::err::LoxError;
+use std::error::Error;
 
 pub struct Scanner {
     source: String,
@@ -39,13 +41,14 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
-    fn add_token(&mut self, token_type: TokenType) {
+    fn add_token(&mut self, token_type: TokenType) -> Result<(), LoxError> {
         let text = self
             .source
             .get(self.start..self.current)
             .expect("Source token is empty.");
         self.tokens.push(Token::new(token_type, text.to_string(),
                                     self.line));
+        Ok(())
     }
 
     fn matches(&mut self, expected: char) -> bool {
@@ -58,7 +61,7 @@ impl Scanner {
             }
     }
 
-    fn scan_token(&mut self) {
+    fn scan_token(&mut self) -> Result<(), LoxError> {
         let c: char = self.advance();
         match c {
             '(' => self.add_token(TokenType::LeftParen),
@@ -75,7 +78,7 @@ impl Scanner {
                 } else {
                     TokenType::Bang
                 };
-                self.add_token(new_type);
+                self.add_token(new_type)
             },
             '=' => {
                 let new_type = if self.matches('=') {
@@ -83,7 +86,7 @@ impl Scanner {
                 } else {
                     TokenType::Equal
                 };
-                self.add_token(new_type);
+                self.add_token(new_type)
             },
             '>' => {
                 let new_type = if self.matches('=') {
@@ -91,7 +94,7 @@ impl Scanner {
                 } else {
                     TokenType::Greater
                 };
-                self.add_token(new_type);
+                self.add_token(new_type)
             },
             '<' => {
                 let new_type = if self.matches('=') {
@@ -99,9 +102,9 @@ impl Scanner {
                 } else {
                     TokenType::Less
                 };
-                self.add_token(new_type);
+                self.add_token(new_type)
             },
-            ' ' | '\r' | '\t' => {}, // skip whitespaces, tab and enter?
+            ' ' | '\r' | '\t' => Ok(()), // skip whitespaces, tab and enter?
             '"' => self.scan_string(),
              _  => {
                  if c.is_digit(10) {
@@ -130,27 +133,27 @@ impl Scanner {
         }
     }
 
-    fn number(&mut self) {
+    fn number(&mut self) -> Result<(), LoxError> {
         while self.peek().is_digit(10) {
             self.advance();
         }
 
-        self.add_token(TokenType::Number);
+        self.add_token(TokenType::Number)
     }
 
-    fn scan_string(&mut self) {
+    fn scan_string(&mut self) -> Result<(), LoxError> {
         while self.peek() != '"' && !self.is_end() {
             self.advance();
         }
         if !self.is_end() {
             self.advance();
         } else {
-            println!("Error: Unterminated String");
+            return Err(LoxError::new(String::from("Unterminated string.")));
         }
-        self.add_token(TokenType::StrLit);
+        self.add_token(TokenType::StrLit)
     }
 
-    fn identifier(&mut self) {
+    fn identifier(&mut self) -> Result<(), LoxError> {
         while is_alphanumeric(self.peek()) {
             self.advance();
         }
@@ -162,17 +165,17 @@ impl Scanner {
             }
         };
        
-        self.add_token(token_type);
+        self.add_token(token_type)
     }
 
-    pub fn scan_tokens(&mut self) -> Vec<Token> {
+    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, LoxError> {
         while !self.is_end() {
             self.start = self.current;
-            self.scan_token();
+            self.scan_token()?
         }
-
+        
         self.add_token(TokenType::EOF);
-        self.tokens.clone()
+        Ok(self.tokens.clone())
     }
 }
             

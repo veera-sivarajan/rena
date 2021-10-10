@@ -21,7 +21,7 @@ impl Parser {
         if self.check(token_type) {
             Ok(self.advance())
         } else {
-            Err(LoxError::new("consume: token not found".to_string()))
+            Err(LoxError::new(message.to_string()))
         }
     }
 
@@ -153,7 +153,7 @@ impl Parser {
             return Ok(expr);
         }
             
-        Err(LoxError::new("Error".to_string()))
+        Err(LoxError::new("Expect expressions.".to_string()))
     }
 }
 

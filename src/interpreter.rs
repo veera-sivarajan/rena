@@ -1,5 +1,6 @@
 use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr};
 use crate::token::TokenType;
+// use crate::err::LoxError;
 
 pub enum Value {
     Number(f64),
@@ -42,7 +43,7 @@ fn intpt_unary(expression: UnaryExpr) -> Value {
         TokenType::Bang =>{
             match right {
                 Value::Bool(value) => Value::Bool(!value),
-                _ => Value::Number(0.0),
+                _ => Value::Bool(false),
             }
         },
         _ => Value::Number(0.0),
