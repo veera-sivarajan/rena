@@ -132,6 +132,8 @@ impl Scanner {
         }
     }
 
+    // FIXME: number() does not scan decimal points
+    // and the digits that follow it.
     fn number(&mut self) -> Result<(), LoxError> {
         while self.peek().is_digit(10) {
             self.advance();

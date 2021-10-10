@@ -1,6 +1,5 @@
 use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr};
 use crate::token::TokenType;
-// use crate::err::LoxError;
 
 pub enum Value {
     Number(f64),

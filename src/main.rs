@@ -22,22 +22,15 @@ fn get_input() -> String {
 
 fn run(source: String) {
     let mut scanner = scanner::Scanner::new(source);
-    let tokens = scanner.scan_tokens();
-    match tokens {
-        Ok(ref _vector) => {},
-        Err(ref e) => {
-            println!("{}", e.to_string());
-            return;
-        }
-    }
-
-    let mut parser = parser::Parser::new(tokens.unwrap());
-    let ast_node = parser.parse();
-    match ast_node {
-        Ok(expr) => interpreter::interpret(expr),
-        Err(lox_error) => {
-            println!("{}", lox_error.to_string());
+    match scanner.scan_tokens() {
+        Ok(tokens) => {
+            let mut parser = parser::Parser::new(tokens);
+            match parser.parse() {
+                Ok(ast) => interpreter::interpret(ast),
+                Err(parse_error) => println!("{}", parse_error.to_string()),
+            }
         },
+        Err(scan_error) => println!("{}", scan_error.to_string()),
     }
 }
 
