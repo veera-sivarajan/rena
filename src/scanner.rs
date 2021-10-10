@@ -132,11 +132,24 @@ impl Scanner {
         }
     }
 
-    // FIXME: number() does not scan decimal points
-    // and the digits that follow it.
+    fn peek_next(&self) -> char {
+        if (self.current + 1) > self.source.len() {
+            '\0'
+        } else {
+            self.source.chars().nth(self.current + 1).unwrap()
+        }
+    }
+
     fn number(&mut self) -> Result<(), LoxError> {
         while self.peek().is_digit(10) {
             self.advance();
+        }
+
+        if self.peek() == '.' && self.peek_next().is_digit(10) {
+            self.advance();
+            while self.peek().is_digit(10) {
+                self.advance();
+            }
         }
 
         self.add_token(TokenType::Number)
