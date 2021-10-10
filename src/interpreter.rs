@@ -6,6 +6,7 @@ pub enum Value {
     Number(f64),
     Bool(bool),
     String(String), 
+    Error(String),
 }
 
 fn stringify(result: Value) -> String {
@@ -13,6 +14,7 @@ fn stringify(result: Value) -> String {
         Value::Number(num) => format!("{}", num),
         Value::Bool(tof) => format!("{}", tof),
         Value::String(value) => format!("{}", value),
+        Value::Error(message) => format!("Error: {}", message),
     }
 }
 
@@ -37,7 +39,7 @@ fn intpt_unary(expression: UnaryExpr) -> Value {
         TokenType::Minus => {
             match right {
                 Value::Number(num) => Value::Number(-num),
-                _ => Value::Number(0.0),
+                _ => Value::Error(String::from("Operand should be a number.")),
             }
         },
         TokenType::Bang =>{
@@ -46,7 +48,7 @@ fn intpt_unary(expression: UnaryExpr) -> Value {
                 _ => Value::Bool(false),
             }
         },
-        _ => Value::Number(0.0),
+        _ => Value::Error(String::from("Unknown unary operation")),
     }
 }
 
@@ -85,10 +87,10 @@ fn intpt_binary(expression: BinaryExpr) -> Value {
                     let prod = l * r;
                     Value::Number(prod)
                 },
-                _ => Value::Number(0.0),
+                _ => Value::Error(String::from("Unknown binary operation")),
             }
         },
-        _ => Value::Number(0.0),
+        _ => Value::Error(String::from("Operands should be numbers.")),
     }
 }
     
