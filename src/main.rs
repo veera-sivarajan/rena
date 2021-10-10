@@ -8,13 +8,12 @@ mod expr;
 
 use std::io::stdout;
 use std::io::Write;
-use std::error::Error;
 
 fn get_input() -> String {
     let mut input = String::new();
     input.clear();
     print!(">> ");
-    stdout().flush();
+    let _flush = stdout().flush();
     let _bytes_read = std::io::stdin().read_line(&mut input).unwrap();
     let _last_char = input.pop();
 
@@ -25,9 +24,9 @@ fn run(source: String) {
     let mut scanner = scanner::Scanner::new(source);
     let tokens = scanner.scan_tokens();
     match tokens {
-        Ok(ref vector) => {},
+        Ok(ref _vector) => {},
         Err(ref e) => {
-            println!("Error: {}", e.description());
+            println!("{}", e.to_string());
             return;
         }
     }
@@ -37,7 +36,7 @@ fn run(source: String) {
     match ast_node {
         Ok(expr) => interpreter::interpret(expr),
         Err(lox_error) => {
-            println!("Error: {}", lox_error.description());
+            println!("{}", lox_error.to_string());
         },
     }
 }

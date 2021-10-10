@@ -2,7 +2,6 @@ use crate::token::{Token, TokenType};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use crate::err::LoxError;
-use std::error::Error;
 
 pub struct Scanner {
     source: String,
@@ -174,7 +173,7 @@ impl Scanner {
             self.scan_token()?
         }
         
-        self.add_token(TokenType::EOF);
+        self.add_token(TokenType::EOF)?;
         Ok(self.tokens.clone())
     }
 }

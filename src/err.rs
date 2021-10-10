@@ -14,7 +14,7 @@ impl Error for LoxError {
 
 impl fmt::Display for LoxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "Error: {}", &self.err)
+        write!(f, "Error: {}", &self.err)
     }
 }
 
