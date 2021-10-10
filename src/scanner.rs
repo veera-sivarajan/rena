@@ -192,5 +192,3 @@ impl Scanner {
         Ok(self.tokens.clone())
     }
 }
-            
-            

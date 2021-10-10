@@ -70,22 +70,14 @@ fn intpt_binary(expression: BinaryExpr) -> Value {
     match (left, right) {
         (Value::Number(l), Value::Number(r)) => {
             match expression.oper.token_type {
-                TokenType::Plus => {
-                    let sum = l + r;
-                    Value::Number(sum)
-                },
-                TokenType::Minus => {
-                    let diff = l - r;
-                    Value::Number(diff)
-                },
-                TokenType::Slash => {
-                    let quotient = l / r;
-                    Value::Number(quotient)
-                },
-                TokenType::Star => {
-                    let prod = l * r;
-                    Value::Number(prod)
-                },
+                TokenType::Plus => Value::Number(l + r),
+                TokenType::Minus => Value::Number(l - r),
+                TokenType::Slash => Value::Number(l / r),
+                TokenType::Star => Value::Number(l * r),
+                TokenType::Greater => Value::Bool(l > r),
+                TokenType::GreaterEqual => Value::Bool(l >= r),
+                TokenType::Less => Value::Bool(l < r),
+                TokenType::LessEqual => Value::Bool(l <= r),
                 _ => Value::Error(String::from("Unknown binary operation")),
             }
         },
