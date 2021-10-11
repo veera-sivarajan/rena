@@ -1,5 +1,5 @@
 use crate::err::RError;
-use crate::expr::{BinaryExpr, Expr, NumberExpr, UnaryExpr};
+use crate::expr::{BinaryExpr, Expr, UnaryExpr};
 use crate::token::TokenType;
 
 pub enum Value {
@@ -25,11 +25,11 @@ pub fn interpret(expression: Expr) {
 
 fn evaluate(expression: Expr) -> Result<Value, RError> {
     match expression {
-        Expr::Binary(expr) => binary(expr),
+        Expr::Number(expr) => Ok(Value::Number(expr.value)),
+        Expr::String(expr) => Ok(Value::String(expr)),
+        Expr::Boolean(expr) => Ok(Value::Bool(expr)),
         Expr::Unary(expr) => unary(expr),
-        Expr::Number(expr) => number(expr),
-        Expr::Boolean(expr) => boolean(expr),
-        Expr::String(expr) => string(expr),
+        Expr::Binary(expr) => binary(expr),
     }
 }
 
@@ -46,18 +46,6 @@ fn unary(expression: UnaryExpr) -> Result<Value, RError> {
         },
         _ => Err(RError::new(String::from("Unknown unary operation"))),
     }
-}
-
-fn boolean(expression: bool) -> Result<Value, RError> {
-    Ok(Value::Bool(expression))
-}
-
-fn string(expression: String) -> Result<Value, RError> {
-    Ok(Value::String(expression))
-}
-
-fn number(expression: NumberExpr) -> Result<Value, RError> {
-    Ok(Value::Number(expression.value))
 }
 
 fn binary(expression: BinaryExpr) -> Result<Value, RError> {
