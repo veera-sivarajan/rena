@@ -1,0 +1,5 @@
+#+TITLE: rena
+Learning Rust by rewriting Lox interpreter. 
+
+This project is in its early stages of development; it can evaluate unary and binary expressions. It will be incrementally developed to a full-fledged Lox interpreter with some additional features. 
+
