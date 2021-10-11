@@ -1,6 +1,6 @@
 use crate::err::LoxError;
+use crate::expr::{BinaryExpr, Expr, NumberExpr, UnaryExpr};
 use crate::token::{Token, TokenType};
-use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr};
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -16,8 +16,8 @@ impl Parser {
         self.peek().token_type == TokenType::EOF
     }
 
-    fn consume(&mut self,
-               token_type: TokenType, message: &str) -> Result<Token, LoxError> {
+    fn consume(&mut self, token_type: TokenType,
+               message: &str) -> Result<Token, LoxError> {
         if self.check(token_type) {
             Ok(self.advance())
         } else {
@@ -67,7 +67,8 @@ impl Parser {
 
     fn equality(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.comparison()?;
-        while self.type_match(vec![TokenType::BangEqual,TokenType::EqualEqual]) {
+        while self.type_match(vec![TokenType::BangEqual,
+                                   TokenType::EqualEqual]) {
             let oper = self.previous();
             let right = self.comparison()?;
             expr = Expr::Binary(BinaryExpr {
@@ -81,8 +82,12 @@ impl Parser {
 
     fn comparison(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.term()?;
-        while self.type_match(vec![TokenType::Greater, TokenType::GreaterEqual,
-                                   TokenType::Less, TokenType::LessEqual,]) {
+        while self.type_match(vec![
+            TokenType::Greater,
+            TokenType::GreaterEqual,
+            TokenType::Less,
+            TokenType::LessEqual,
+        ]) {
             let oper = self.previous();
             let right = self.term()?;
             expr = Expr::Binary(BinaryExpr {
@@ -143,7 +148,7 @@ impl Parser {
         } else if self.type_match(vec![TokenType::Number]) {
             let num_str = self.previous().lexeme;
             let num = num_str.parse::<f64>().unwrap();
-            return Ok(Expr::Number(NumberExpr{value: num}));
+            return Ok(Expr::Number(NumberExpr { value: num }));
         } else if self.type_match(vec![TokenType::StrLit]) {
             let str_lit = self.previous().lexeme;
             return Ok(Expr::String(String::from(str_lit)));
@@ -152,8 +157,7 @@ impl Parser {
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
             return Ok(expr);
         }
-            
-        Err(LoxError::new("Expect expressions.".to_string()))
+
+        Err(LoxError::new("Expect expressions.".to_string()))                    
     }
 }
-

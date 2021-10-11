@@ -20,7 +20,7 @@ impl fmt::Display for LoxError {
 
 impl LoxError {
     pub fn new(err: String) -> LoxError {
-        LoxError{ err }
+        LoxError { err }
     }
 }
 
@@ -31,7 +31,7 @@ pub struct RError {
 
 impl RError {
     pub fn new(err: String) -> RError {
-        RError{ err }
+        RError { err }
     }
 }
 
@@ -40,7 +40,7 @@ impl Error for RError {
         &self.err
     }
 }
-    
+
 impl fmt::Display for RError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Runtime Error: {}", &self.err)

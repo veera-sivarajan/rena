@@ -1,14 +1,13 @@
+mod ast;
+mod err;
+mod expr;
+mod interpreter;
+mod parser;
 mod scanner;
 mod token;
-mod err;
-mod parser;
-mod ast;
-mod interpreter;
-mod expr;
 
 use std::io::stdout;
 use std::io::Write;
-
 
 fn get_input() -> String {
     let mut input = String::new();
@@ -30,14 +29,14 @@ fn run(source: String) {
                 Ok(ast) => interpreter::interpret(ast),
                 Err(parse_error) => println!("{}", parse_error.to_string()),
             }
-        },
+        }
         Err(scan_error) => println!("{}", scan_error.to_string()),
     }
 }
 
 fn main() {
     loop {
-        let input = get_input(); 
+        let input = get_input();
         if input == "exit" {
             break;
         }

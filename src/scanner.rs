@@ -1,7 +1,7 @@
+use crate::err::LoxError;
 use crate::token::{Token, TokenType};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
-use crate::err::LoxError;
 
 pub struct Scanner {
     source: String,
@@ -45,19 +45,19 @@ impl Scanner {
             .source
             .get(self.start..self.current)
             .expect("Source token is empty.");
-        self.tokens.push(Token::new(token_type, text.to_string(),
-                                    self.line));
+        self.tokens
+            .push(Token::new(token_type, text.to_string(), self.line));
         Ok(())
     }
 
     fn matches(&mut self, expected: char) -> bool {
         if self.is_end() ||
             self.source.chars().nth(self.current).unwrap() != expected {
-                false
-            } else {
-                self.current += 1;
-                true
-            }
+            false
+        } else {
+            self.current += 1;
+            true
+        }
     }
 
     fn scan_token(&mut self) -> Result<(), LoxError> {
@@ -78,7 +78,7 @@ impl Scanner {
                     TokenType::Bang
                 };
                 self.add_token(new_type)
-            },
+            }
             '=' => {
                 let new_type = if self.matches('=') {
                     TokenType::EqualEqual
@@ -86,7 +86,7 @@ impl Scanner {
                     TokenType::Equal
                 };
                 self.add_token(new_type)
-            },
+            }
             '>' => {
                 let new_type = if self.matches('=') {
                     TokenType::GreaterEqual
@@ -94,7 +94,7 @@ impl Scanner {
                     TokenType::Greater
                 };
                 self.add_token(new_type)
-            },
+            }
             '<' => {
                 let new_type = if self.matches('=') {
                     TokenType::LessEqual
@@ -102,17 +102,17 @@ impl Scanner {
                     TokenType::Less
                 };
                 self.add_token(new_type)
-            },
+            }
             ' ' | '\r' | '\t' => Ok(()), // skip whitespaces, tab and enter?
             '"' => self.scan_string(),
-             _  => {
-                 if c.is_digit(10) {
-                     self.number()
-                 } else if is_alphanumeric(c) {
-                     self.identifier()
-                 } else {
-                     self.add_token(TokenType::Unknown)
-                 }
+            _ => {
+                if c.is_digit(10) {
+                    self.number()
+                } else if is_alphanumeric(c) {
+                    self.identifier()
+                } else {
+                    self.add_token(TokenType::Unknown)
+                }
             }
         }
     }
@@ -178,7 +178,7 @@ impl Scanner {
                 Some(t_type) => t_type.clone(),
             }
         };
-       
+
         self.add_token(token_type)
     }
 
@@ -187,7 +187,7 @@ impl Scanner {
             self.start = self.current;
             self.scan_token()?
         }
-        
+
         self.add_token(TokenType::EOF)?;
         Ok(self.tokens.clone())
     }
