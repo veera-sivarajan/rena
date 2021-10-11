@@ -64,33 +64,45 @@ fn intpt_binary(expression: BinaryExpr) -> Result<Value, RError> {
     let left = evaluate(*expression.left)?;
     let right = evaluate(*expression.right)?;
 
-    if let (Value::Number(l), Value::Number(r)) = (&left, &right) {
-        match expression.oper.token_type {
-            TokenType::EqualEqual => Ok(Value::Bool(l == r)),
-            TokenType::BangEqual => Ok(Value::Bool(l != r)),
-            TokenType::Plus => Ok(Value::Number(l + r)),
-            TokenType::Minus => Ok(Value::Number(l - r)),
-            TokenType::Slash => Ok(Value::Number(l / r)),
-            TokenType::Star => Ok(Value::Number(l * r)),
-            TokenType::Greater => Ok(Value::Bool(l > r)),
-            TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
-            TokenType::Less => Ok(Value::Bool(l < r)),
-            TokenType::LessEqual => Ok(Value::Bool(l <= r)),
-            _ => unreachable!(),
+    match (left, right) {
+        (Value::Number(l), Value::Number(r)) => {
+            match expression.oper.token_type {
+                TokenType::EqualEqual => Ok(Value::Bool(l == r)),
+                TokenType::BangEqual => Ok(Value::Bool(l != r)),
+                TokenType::Plus => Ok(Value::Number(l + r)),
+                TokenType::Minus => Ok(Value::Number(l - r)),
+                TokenType::Slash => Ok(Value::Number(l / r)),
+                TokenType::Star => Ok(Value::Number(l * r)),
+                TokenType::Greater => Ok(Value::Bool(l > r)),
+                TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
+                TokenType::Less => Ok(Value::Bool(l < r)),
+                TokenType::LessEqual => Ok(Value::Bool(l <= r)),
+                _ => Err(RError::new(String::from("Unknown operation."))),
+            }
+        },
+        (Value::Bool(l), Value::Bool(r)) => {
+            match expression.oper.token_type {
+                TokenType::EqualEqual => Ok(Value::Bool(l == r)),
+                TokenType::BangEqual => Ok(Value::Bool(l != r)),
+                _ => Err(RError::new(String::from("Unknown operation."))),
+            }
+        },
+        (Value::String(l), Value::String(r)) => {
+            match expression.oper.token_type {
+                TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
+                TokenType::BangEqual => Ok(Value::Bool(l != r)),
+                _ => Err(RError::new(String::from("Unknown operation."))),
+            }
+        },
+        _ => {
+            match expression.oper.token_type {
+                TokenType::EqualEqual => Ok(Value::Bool(false)),
+                TokenType::BangEqual => Ok(Value::Bool(true)),
+                _ => {
+                    let message = "Operands should be of same type.".to_string();
+                    Err(RError::new(message))
+                }
+            }
         }
-    } else if let (Value::Bool(l), Value::Bool(r)) = (&left, &right) {
-        match expression.oper.token_type {
-            TokenType::EqualEqual => Ok(Value::Bool(l == r)),
-            TokenType::BangEqual => Ok(Value::Bool(l != r)),
-            _ => unreachable!(),
-        }
-    } else if let (Value::String(l), Value::String(r)) = (&left, &right) {
-        match expression.oper.token_type {
-            TokenType::EqualEqual => Ok(Value::Bool(l.eq(r))),
-            TokenType::BangEqual => Ok(Value::Bool(l != r)),
-            _ => unreachable!(),
-        }
-    } else {
-        Ok(Value::Bool(false))
     }
 }
