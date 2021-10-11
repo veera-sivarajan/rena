@@ -1,11 +1,11 @@
-use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr};
-use crate::token::TokenType;
 use crate::err::RError;
+use crate::expr::{BinaryExpr, Expr, NumberExpr, UnaryExpr};
+use crate::token::TokenType;
 
 pub enum Value {
     Number(f64),
     Bool(bool),
-    String(String), 
+    String(String),
 }
 
 fn stringify(result: Value) -> String {
@@ -26,7 +26,7 @@ pub fn interpret(expression: Expr) {
 fn evaluate(expression: Expr) -> Result<Value, RError> {
     match expression {
         Expr::Binary(expr) => intpt_binary(expr),
-        Expr::Unary(expr)  => intpt_unary(expr),
+        Expr::Unary(expr) => intpt_unary(expr),
         Expr::Number(expr) => intpt_number(expr),
         Expr::Boolean(expr) => intpt_boolean(expr),
         Expr::String(expr) => intpt_string(expr),
@@ -36,18 +36,13 @@ fn evaluate(expression: Expr) -> Result<Value, RError> {
 fn intpt_unary(expression: UnaryExpr) -> Result<Value, RError> {
     let right = evaluate(*expression.right)?;
     match expression.oper.token_type {
-        TokenType::Minus => {
-            match right {
-                Value::Number(num) => Ok(Value::Number(-num)),
-                _ => Err(RError::new(
-                    String::from("Operand should be a number."))),
-            }
+        TokenType::Minus => match right {
+            Value::Number(num) => Ok(Value::Number(-num)),
+            _ => Err(RError::new(String::from("Operand should be a number."))),
         },
-        TokenType::Bang =>{
-            match right {
-                Value::Bool(value) => Ok(Value::Bool(!value)),
-                _ => Ok(Value::Bool(false)),
-            }
+        TokenType::Bang => match right {
+            Value::Bool(value) => Ok(Value::Bool(!value)),
+            _ => Ok(Value::Bool(false)),
         },
         _ => Err(RError::new(String::from("Unknown unary operation"))),
     }
@@ -69,22 +64,33 @@ fn intpt_binary(expression: BinaryExpr) -> Result<Value, RError> {
     let left = evaluate(*expression.left)?;
     let right = evaluate(*expression.right)?;
 
-    match (left, right) {
-        (Value::Number(l), Value::Number(r)) => {
-            match expression.oper.token_type {
-                TokenType::Plus         => Ok(Value::Number(l + r)),
-                TokenType::Minus        => Ok(Value::Number(l - r)),
-                TokenType::Slash        => Ok(Value::Number(l / r)),
-                TokenType::Star         => Ok(Value::Number(l * r)),
-                TokenType::Greater      => Ok(Value::Bool(l > r)),
-                TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
-                TokenType::Less         => Ok(Value::Bool(l < r)),
-                TokenType::LessEqual    => Ok(Value::Bool(l <= r)),
-
-                _ => Err(RError::new(String::from("Unknown binary operation."))),
-            }
-        },
-        _ => Err(RError::new(String::from("Operands should be numbers."))),
+    if let (Value::Number(l), Value::Number(r)) = (&left, &right) {
+        match expression.oper.token_type {
+            TokenType::EqualEqual => Ok(Value::Bool(l == r)),
+            TokenType::BangEqual => Ok(Value::Bool(l != r)),
+            TokenType::Plus => Ok(Value::Number(l + r)),
+            TokenType::Minus => Ok(Value::Number(l - r)),
+            TokenType::Slash => Ok(Value::Number(l / r)),
+            TokenType::Star => Ok(Value::Number(l * r)),
+            TokenType::Greater => Ok(Value::Bool(l > r)),
+            TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
+            TokenType::Less => Ok(Value::Bool(l < r)),
+            TokenType::LessEqual => Ok(Value::Bool(l <= r)),
+            _ => unreachable!(),
+        }
+    } else if let (Value::Bool(l), Value::Bool(r)) = (&left, &right) {
+        match expression.oper.token_type {
+            TokenType::EqualEqual => Ok(Value::Bool(l == r)),
+            TokenType::BangEqual => Ok(Value::Bool(l != r)),
+            _ => unreachable!(),
+        }
+    } else if let (Value::String(l), Value::String(r)) = (&left, &right) {
+        match expression.oper.token_type {
+            TokenType::EqualEqual => Ok(Value::Bool(l.eq(r))),
+            TokenType::BangEqual => Ok(Value::Bool(l != r)),
+            _ => unreachable!(),
+        }
+    } else {
+        Ok(Value::Bool(false))
     }
 }
-    
