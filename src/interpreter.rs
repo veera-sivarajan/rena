@@ -25,15 +25,15 @@ pub fn interpret(expression: Expr) {
 
 fn evaluate(expression: Expr) -> Result<Value, RError> {
     match expression {
-        Expr::Binary(expr) => intpt_binary(expr),
-        Expr::Unary(expr) => intpt_unary(expr),
-        Expr::Number(expr) => intpt_number(expr),
-        Expr::Boolean(expr) => intpt_boolean(expr),
-        Expr::String(expr) => intpt_string(expr),
+        Expr::Binary(expr) => binary(expr),
+        Expr::Unary(expr) => unary(expr),
+        Expr::Number(expr) => number(expr),
+        Expr::Boolean(expr) => boolean(expr),
+        Expr::String(expr) => string(expr),
     }
 }
 
-fn intpt_unary(expression: UnaryExpr) -> Result<Value, RError> {
+fn unary(expression: UnaryExpr) -> Result<Value, RError> {
     let right = evaluate(*expression.right)?;
     match expression.oper.token_type {
         TokenType::Minus => match right {
@@ -48,19 +48,19 @@ fn intpt_unary(expression: UnaryExpr) -> Result<Value, RError> {
     }
 }
 
-fn intpt_boolean(expression: bool) -> Result<Value, RError> {
+fn boolean(expression: bool) -> Result<Value, RError> {
     Ok(Value::Bool(expression))
 }
 
-fn intpt_string(expression: String) -> Result<Value, RError> {
+fn string(expression: String) -> Result<Value, RError> {
     Ok(Value::String(expression))
 }
 
-fn intpt_number(expression: NumberExpr) -> Result<Value, RError> {
+fn number(expression: NumberExpr) -> Result<Value, RError> {
     Ok(Value::Number(expression.value))
 }
 
-fn intpt_binary(expression: BinaryExpr) -> Result<Value, RError> {
+fn binary(expression: BinaryExpr) -> Result<Value, RError> {
     let left = evaluate(*expression.left)?;
     let right = evaluate(*expression.right)?;
 
