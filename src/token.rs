@@ -1,31 +1,10 @@
 #[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
-    LeftParen,
-    RightParen,
-    Dot,
-    Minus,
-    Plus,
-    Slash,
-    Star,
-    Semicolon,
-    EOF,
+    LeftParen, RightParen, Dot, Minus, Plus, Slash, Star, Semicolon, EOF,
 
-    Bang,
-    BangEqual,
-    Equal,
-    EqualEqual,
-    Greater,
-    GreaterEqual,
-    Less,
-    LessEqual,
+    Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
 
-    Number,
-    True,
-    False,
-    Unknown,
-    Print,
-    Identifier,
-    StrLit,
+    Number, True, False, Unknown, Identifier, StrLit,
 }
 
 #[derive(Clone, Debug)]
@@ -69,7 +48,6 @@ impl TokenType {
             TokenType::False => String::from("False"),
             TokenType::EOF => String::from("EOF"),
             TokenType::Unknown => String::from("Unknown"),
-            TokenType::Print => String::from("Print"),
             TokenType::Identifier => String::from("Identifier"),
             TokenType::StrLit => format!("String"),
         }

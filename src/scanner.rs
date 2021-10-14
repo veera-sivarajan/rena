@@ -16,7 +16,6 @@ lazy_static! {
         let mut hash_map = HashMap::new();
         hash_map.insert("true".to_owned(), TokenType::True);
         hash_map.insert("false".to_owned(), TokenType::False);
-        hash_map.insert("print".to_owned(), TokenType::Print);
         hash_map
     };
 }
