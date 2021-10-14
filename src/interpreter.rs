@@ -12,7 +12,7 @@ fn stringify(result: Value) -> String {
     match result {
         Value::Number(num) => format!("{}", num),
         Value::Bool(tof) => format!("{}", tof),
-        Value::String(value) => format!("{}", value),
+        Value::String(value) => value,
     }
 }
 

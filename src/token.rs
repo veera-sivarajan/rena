@@ -1,6 +1,6 @@
 #[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
-    LeftParen, RightParen, Dot, Minus, Plus, Slash, Star, Semicolon, EOF,
+    LeftParen, RightParen, Dot, Minus, Plus, Slash, Star, Semicolon, Eof,
 
     Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
 
@@ -43,13 +43,13 @@ impl TokenType {
             TokenType::GreaterEqual => String::from("GreaterEqual"),
             TokenType::Less => String::from("Less"),
             TokenType::LessEqual => String::from("LessEqual"),
-            TokenType::Number => format!("Number"),
+            TokenType::Number => String::from("Number"),
             TokenType::True => String::from("True"),
             TokenType::False => String::from("False"),
-            TokenType::EOF => String::from("EOF"),
+            TokenType::Eof => String::from("EOF"),
             TokenType::Unknown => String::from("Unknown"),
             TokenType::Identifier => String::from("Identifier"),
-            TokenType::StrLit => format!("String"),
+            TokenType::StrLit => String::from("String"),
         }
     }
 }

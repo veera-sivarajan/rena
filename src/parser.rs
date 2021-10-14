@@ -13,7 +13,7 @@ impl Parser {
     }
 
     fn is_end(&self) -> bool {
-        self.peek().token_type == TokenType::EOF
+        self.peek().token_type == TokenType::Eof
     }
 
     fn consume(&mut self, token_type: TokenType,
@@ -73,7 +73,7 @@ impl Parser {
             let right = self.comparison()?;
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
-                oper: oper,
+                oper,
                 right: Box::new(right),
             });
         }
@@ -92,7 +92,7 @@ impl Parser {
             let right = self.term()?;
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
-                oper: oper,
+                oper,
                 right: Box::new(right),
             });
         }
@@ -106,7 +106,7 @@ impl Parser {
             let right = self.factor()?;
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
-                oper: oper,
+                oper,
                 right: Box::new(right),
             });
         }
@@ -120,7 +120,7 @@ impl Parser {
             let right = self.unary()?;
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
-                oper: oper,
+                oper,
                 right: Box::new(right),
             });
         }
@@ -151,7 +151,7 @@ impl Parser {
             return Ok(Expr::Number(NumberExpr { value: num }));
         } else if self.type_match(vec![TokenType::StrLit]) {
             let str_lit = self.previous().lexeme;
-            return Ok(Expr::String(String::from(str_lit)));
+            return Ok(Expr::String(str_lit));
         } else if self.type_match(vec![TokenType::LeftParen]) {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
