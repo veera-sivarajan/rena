@@ -48,6 +48,14 @@ fn unary(expression: UnaryExpr) -> Result<Value, RError> {
     }
 }
 
+fn division(left: f64, right: f64) -> Result<Value, RError> {
+    if right == 0.0 {
+        Err(RError::new(String::from("Division by zero not allowed")))
+    } else {
+        Ok(Value::Number(left / right))
+    }
+}
+
 fn binary(expression: BinaryExpr) -> Result<Value, RError> {
     let left = evaluate(*expression.left)?;
     let right = evaluate(*expression.right)?;
@@ -59,7 +67,7 @@ fn binary(expression: BinaryExpr) -> Result<Value, RError> {
                 TokenType::BangEqual => Ok(Value::Bool(l != r)),
                 TokenType::Plus => Ok(Value::Number(l + r)),
                 TokenType::Minus => Ok(Value::Number(l - r)),
-                TokenType::Slash => Ok(Value::Number(l / r)),
+                TokenType::Slash => division(l, r),
                 TokenType::Star => Ok(Value::Number(l * r)),
                 TokenType::Greater => Ok(Value::Bool(l > r)),
                 TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
