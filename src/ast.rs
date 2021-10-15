@@ -1,6 +1,6 @@
 use crate::expr::Expr;
 
-pub fn _print_ast(expr: &Expr) {
+pub fn print_ast(expr: &Expr) {
     match expr {
         Expr::Number(float) => println!("{}", float),
         Expr::String(str_value) => println!("{}", str_value),

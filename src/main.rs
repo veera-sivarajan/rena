@@ -1,4 +1,3 @@
-mod ast;
 mod err;
 mod expr;
 mod interpreter;
