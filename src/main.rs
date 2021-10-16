@@ -2,6 +2,7 @@ mod err;
 mod expr;
 mod stmt;
 mod interpreter;
+mod environment;
 mod parser;
 mod scanner;
 mod token;
@@ -26,7 +27,10 @@ fn run(source: String) {
         Ok(tokens) => {
             let mut parser = parser::Parser::new(tokens);
             match parser.parse() {
-                Ok(ast) => interpreter::interpret(ast),
+                Ok(ast) => {
+                    let mut interpreter = interpreter::Interpreter::new();
+                    interpreter.interpret(ast);
+                },
                 Err(parse_error) => println!("{}", parse_error.to_string()),
             }
         }
