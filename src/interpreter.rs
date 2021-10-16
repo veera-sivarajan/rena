@@ -44,16 +44,16 @@ impl Interpreter {
         }
     }
 
-    // fn var(&mut self, decl: VarStmt) -> Result<(), RError> {
-    //     if let Some(init) = decl.init {
-    //         let value = self.evaluate(*init)?;
-    //         self.memory.define(decl.name.lexeme, Some(value));
-    //         Ok(())
-    //     } else {
-    //         self.memory.define(decl.name.lexeme, None);
-    //         Ok(())
-    //     }
-    // }
+    fn var(&mut self, decl: VarStmt) -> Result<(), RError> {
+        if let Some(init) = decl.init {
+            let value = self.evaluate(*init)?;
+            self.memory.define(decl.name.lexeme, Some(value));
+            Ok(())
+        } else {
+            self.memory.define(decl.name.lexeme, None);
+            Ok(())
+        }
+    }
 
     fn print(&self, stmt: PrintStmt) -> Result<(), RError> { 
         let value = self.evaluate(*stmt.expr)?;

@@ -96,11 +96,12 @@ impl Parser {
 
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
         let name = self.consume(TokenType::Identifier,"Expect variable name.")?;
-
         if self.type_match(vec![TokenType::Equal]) {
             let init = self.expression()?;
+            self.consume(TokenType::Semicolon, "Expect semicolon.")?;
             Ok(Stmt::Var(VarStmt { name, init: Some(Box::new(init)) }))
         } else {
+            self.consume(TokenType::Semicolon, "Expect semicolon.")?;
             Ok(Stmt::Var(VarStmt { name, init: None }))
         }
     }
