@@ -59,7 +59,7 @@ impl Parser {
     }
 
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
-        let statements: Vec<Stmt> = Vec::new();
+        let mut statements: Vec<Stmt> = Vec::new();
         while !self.is_end() {
             statements.push(self.declaration()?);
         }
@@ -75,15 +75,16 @@ impl Parser {
     }
 
     fn statement(&mut self) -> Result<Stmt, LoxError> {
-        let next_token = self.peek();
-        match next_token.token_type {
-            TokenType::Print => self.print_stmt(),
-            _ => self.expression_stmt(),
+        if self.type_match(vec![TokenType::Print]) {
+            self.print_stmt()
+        } else {
+            self.expression_stmt()
         }
     }
 
     fn print_stmt(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expect semicolon.")?;
         Ok(Stmt::Print(PrintStmt { expr: Box::new(expr) } ))
     }
 

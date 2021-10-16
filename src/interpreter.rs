@@ -1,5 +1,6 @@
 use crate::err::RError;
 use crate::expr::{BinaryExpr, Expr, UnaryExpr};
+use crate::stmt::{Stmt, VarStmt, PrintStmt, ExpressionStmt};
 use crate::token::TokenType;
 
 pub enum Value {
@@ -16,11 +17,35 @@ fn stringify(result: Value) -> String {
     }
 }
 
-pub fn interpret(expression: Expr) {
-    match evaluate(expression) {
-        Ok(value) => println!("{}", stringify(value)),
-        Err(runtime_error) => println!("{}", runtime_error.to_string()),
+pub fn interpret(statements: Vec<Stmt>) {
+    for statement in statements {
+        match execute(statement) {
+            Ok(()) => {},
+            Err(runtime_error) => println!("{}", runtime_error.to_string()),
+        }
     }
+}
+
+fn execute(statement: Stmt) -> Result<(), RError> {
+    match statement {
+        Stmt::Print(stmt) => Ok(print(stmt)?),
+        _ => Ok(()),
+    }
+}
+
+// fn _var(decl: Stmt) {
+//     if let Some(init) = decl.init {
+//         let value = evaluate(decl.init)?;
+//         // TODO: store name and value in environment (hash map)
+//     } else {
+//         // TODO: Store name and none in environment
+//     }
+// }
+
+fn print(stmt: PrintStmt) -> Result<(), RError> { 
+    let value = evaluate(*stmt.expr)?;
+    println!("{}", stringify(value));
+    Ok(())
 }
 
 fn evaluate(expression: Expr) -> Result<Value, RError> {
