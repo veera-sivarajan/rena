@@ -90,6 +90,7 @@ impl Parser {
 
     fn expression_stmt(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expect semicolon.")?;
         Ok(Stmt::Expression(ExpressionStmt { expr: Box::new(expr) }))
     }
 
