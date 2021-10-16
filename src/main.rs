@@ -1,5 +1,6 @@
 mod err;
 mod expr;
+mod stmt;
 mod interpreter;
 mod parser;
 mod scanner;

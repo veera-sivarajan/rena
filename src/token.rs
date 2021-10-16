@@ -4,7 +4,7 @@ pub enum TokenType {
 
     Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
 
-    Number, True, False, Unknown, Identifier, StrLit,
+    Number, True, False, Unknown, Identifier, StrLit, Var, Print, 
 }
 
 #[derive(Clone, Debug)]
@@ -50,6 +50,8 @@ impl TokenType {
             TokenType::Unknown => String::from("Unknown"),
             TokenType::Identifier => String::from("Identifier"),
             TokenType::StrLit => String::from("String"),
+            TokenType::Var => String::from("Var"),
+            TokenType::Print => String::from("Print"),
         }
     }
 }
