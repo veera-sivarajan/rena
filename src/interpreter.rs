@@ -9,6 +9,7 @@ use crate::environment::Environment;
 pub enum Value {
     Number(f64),
     Bool(bool),
+    String(String),
 }
 
 pub struct Interpreter {
@@ -24,7 +25,7 @@ impl Interpreter {
         match result {
             Value::Number(num) => format!("{}", num),
             Value::Bool(tof) => format!("{}", tof),
-            // Value::String(value) => value,
+            Value::String(value) => value,
         }
     }
 
@@ -48,11 +49,9 @@ impl Interpreter {
     fn var(&mut self, decl: VarStmt) -> Result<(), RError> {
         if let Some(init) = decl.init {
             let value = self.evaluate(*init)?;
-            println!("Adding variable to memory");
             self.memory.define(decl.name.lexeme, Some(value));
             Ok(())
         } else {
-            println!("Adding variable to memory- None");
             self.memory.define(decl.name.lexeme, None);
             Ok(())
         }
@@ -72,12 +71,11 @@ impl Interpreter {
     fn evaluate(&self, expression: Expr) -> Result<Value, RError> {
         match expression {
             Expr::Number(expr) => Ok(Value::Number(expr.value)),
-            // Expr::String(expr) => Ok(Value::String(expr)),
+            Expr::String(expr) => Ok(Value::String(expr)),
             Expr::Boolean(expr) => Ok(Value::Bool(expr)),
             Expr::Unary(expr) => self.unary(expr),
             Expr::Binary(expr) => self.binary(expr),
             Expr::Variable(expr) => self.variable(expr),
-            Expr::String(expr) => Ok(Value::Number(1.0)),
         }
     }
 
@@ -87,8 +85,11 @@ impl Interpreter {
 
     fn look_up(&self, name: Token) -> Result<Value, RError> {
         match self.memory.fetch(name.lexeme) {
-            None => Err(RError::new(String::from("Variable undefined."))),
-            Some(value) => Ok(value),
+            None => Err(RError::new(String::from("Undeclared variable."))),
+            Some(variable) => match variable {
+                None => Err(RError::new("Uninitialized variable.".to_string())),
+                Some(value) => Ok(value.clone()),
+            }
         }
     }
 
@@ -142,13 +143,13 @@ impl Interpreter {
                     _ => Err(RError::new(String::from("Unknown operation."))),
                 }
             },
-            // (Value::String(l), Value::String(r)) => {
-            //     match expression.oper.token_type {
-            //         TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
-            //         TokenType::BangEqual => Ok(Value::Bool(l != r)),
-            //         _ => Err(RError::new(String::from("Unknown operation."))),
-            //     }
-            // },
+            (Value::String(l), Value::String(r)) => {
+                match expression.oper.token_type {
+                    TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
+                    TokenType::BangEqual => Ok(Value::Bool(l != r)),
+                    _ => Err(RError::new(String::from("Unknown operation."))),
+                }
+            },
             _ => {
                 match expression.oper.token_type {
                     TokenType::EqualEqual => Ok(Value::Bool(false)),
