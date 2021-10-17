@@ -21,16 +21,13 @@ fn get_input() -> String {
     input
 }
 
-fn run(source: String) {
+fn run(source: String, interpreter: &mut interpreter::Interpreter) {
     let mut scanner = scanner::Scanner::new(source);
     match scanner.scan_tokens() {
         Ok(tokens) => {
             let mut parser = parser::Parser::new(tokens);
             match parser.parse() {
-                Ok(ast) => {
-                    let mut interpreter = interpreter::Interpreter::new();
-                    interpreter.interpret(ast);
-                },
+                Ok(ast) => interpreter.interpret(ast),
                 Err(parse_error) => println!("{}", parse_error.to_string()),
             }
         }
@@ -39,11 +36,12 @@ fn run(source: String) {
 }
 
 fn main() {
+    let mut interpreter = interpreter::Interpreter::new();
     loop {
         let input = get_input();
         if input == "exit" {
             break;
         }
-        run(input);
+        run(input, &mut interpreter);
     }
 }
