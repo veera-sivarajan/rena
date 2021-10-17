@@ -5,6 +5,8 @@ use crate::stmt::{Stmt, VarStmt, PrintStmt, ExpressionStmt};
 use crate::token::TokenType;
 use crate::environment::Environment;
 
+use float_eq::{float_eq, float_ne};
+
 #[derive(Clone)]
 pub enum Value {
     Number(f64),
@@ -123,8 +125,14 @@ impl Interpreter {
         match (left, right) {
             (Value::Number(l), Value::Number(r)) => {
                 match expression.oper.token_type {
-                    TokenType::EqualEqual => Ok(Value::Bool(l == r)),
-                    TokenType::BangEqual => Ok(Value::Bool(l != r)),
+                    TokenType::EqualEqual => {
+                        let result = float_eq!(l, r, ulps <= 10); 
+                        Ok(Value::Bool(result))
+                    }
+                    TokenType::BangEqual => {
+                        let result = float_ne!(l, r, ulps <= 10); 
+                        Ok(Value::Bool(result))
+                    }
                     TokenType::Plus => Ok(Value::Number(l + r)),
                     TokenType::Minus => Ok(Value::Number(l - r)),
                     TokenType::Slash => self.division(l, r),
