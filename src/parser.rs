@@ -1,5 +1,5 @@
 use crate::err::LoxError;
-use crate::expr::{BinaryExpr, Expr, NumberExpr, UnaryExpr};
+use crate::expr::{BinaryExpr, Expr, NumberExpr, UnaryExpr, VariableExpr};
 use crate::stmt::{Stmt, VarStmt, PrintStmt, ExpressionStmt};
 use crate::token::{Token, TokenType};
 
@@ -201,8 +201,10 @@ impl Parser {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
             return Ok(expr);
+        } else if self.type_match(vec![TokenType::Identifier]) {
+            return Ok(Expr::Variable(VariableExpr { name: self.previous() }));
         }
 
-        Err(LoxError::new("Expect expressions.".to_string()))                    
+        Err(LoxError::new("Expect expressions.".to_string()))                   
     }
 }

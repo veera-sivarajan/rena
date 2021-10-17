@@ -3,11 +3,25 @@ use std::fmt;
 
 #[derive(Clone, Debug)]
 pub enum Expr {
+    Variable(VariableExpr),
     Binary(BinaryExpr),
     Unary(UnaryExpr),
     Number(NumberExpr),
     Boolean(bool),
     String(String),
+}
+
+impl fmt::Display for Expr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &*self {
+            Expr::Binary(expr) => expr.fmt(f),
+            Expr::Unary(expr) => expr.fmt(f),
+            Expr::Number(expr) => expr.fmt(f),
+            Expr::Boolean(expr) => write!(f, "{}", expr),
+            Expr::String(expr) => write!(f, "{}", expr),
+            Expr::Variable(expr) => write!(f, "{}", expr),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -51,14 +65,14 @@ impl fmt::Display for NumberExpr {
     }
 }
 
-impl fmt::Display for Expr {
+#[derive(Clone, Debug)]
+pub struct VariableExpr {
+    pub name: Token,
+}
+
+impl fmt::Display for VariableExpr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &*self {
-            Expr::Binary(expr) => expr.fmt(f),
-            Expr::Unary(expr) => expr.fmt(f),
-            Expr::Number(expr) => expr.fmt(f),
-            Expr::Boolean(expr) => write!(f, "{}", expr),
-            Expr::String(expr) => write!(f, "{}", expr),
-        }
+        write!(f, "{}", self.name.lexeme)
     }
 }
+
