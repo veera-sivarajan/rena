@@ -1,4 +1,4 @@
-use crate::err::RError;
+use crate::err::LoxError;
 use crate::token::Token;
 use crate::expr::{BinaryExpr, Expr, UnaryExpr, VariableExpr};
 use crate::stmt::{Stmt, VarStmt, PrintStmt, ExpressionStmt};
@@ -31,16 +31,14 @@ impl Interpreter {
         }
     }
 
-    pub fn interpret(&mut self, statements: Vec<Stmt>) {
+    pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for statement in statements {
-            match self.execute(statement) {
-                Ok(()) => {},
-                Err(runtime_error) => println!("{}", runtime_error.to_string()),
-            }
+            self.execute(statement)?
         }
+        Ok(())
     }
 
-    fn execute(&mut self, statement: Stmt) -> Result<(), RError> {
+    fn execute(&mut self, statement: Stmt) -> Result<(), LoxError> {
         match statement {
             Stmt::Print(stmt) => Ok(self.print(stmt)?),
             Stmt::Var(stmt) => Ok(self.var(stmt)?), 
@@ -48,7 +46,7 @@ impl Interpreter {
         }
     }
 
-    fn var(&mut self, decl: VarStmt) -> Result<(), RError> {
+    fn var(&mut self, decl: VarStmt) -> Result<(), LoxError> {
         if let Some(init) = decl.init {
             let value = self.evaluate(*init)?;
             self.memory.define(decl.name.lexeme, Some(value));
@@ -59,18 +57,18 @@ impl Interpreter {
         }
     }
 
-    fn print(&self, stmt: PrintStmt) -> Result<(), RError> { 
+    fn print(&self, stmt: PrintStmt) -> Result<(), LoxError> { 
         let value = self.evaluate(*stmt.expr)?;
         println!("{}", self.stringify(value));
         Ok(())
     }
 
-    fn expression(&self, stmt: ExpressionStmt) -> Result<(), RError> {
+    fn expression(&self, stmt: ExpressionStmt) -> Result<(), LoxError> {
         let _value = self.evaluate(*stmt.expr)?;
         Ok(())
     }
 
-    fn evaluate(&self, expression: Expr) -> Result<Value, RError> {
+    fn evaluate(&self, expression: Expr) -> Result<Value, LoxError> {
         match expression {
             Expr::Number(expr) => Ok(Value::Number(expr.value)),
             Expr::String(expr) => Ok(Value::String(expr)),
@@ -81,44 +79,44 @@ impl Interpreter {
         }
     }
 
-    fn variable(&self, expression: VariableExpr) -> Result<Value, RError> {
+    fn variable(&self, expression: VariableExpr) -> Result<Value, LoxError> {
         self.look_up(expression.name)
     }
 
-    fn look_up(&self, name: Token) -> Result<Value, RError> {
+    fn look_up(&self, name: Token) -> Result<Value, LoxError> {
         match self.memory.fetch(name.lexeme) {
-            None => Err(RError::new(String::from("Undeclared variable."))),
+            None => Err(LoxError::new(String::from("Undeclared variable."))),
             Some(variable) => match variable {
-                None => Err(RError::new("Uninitialized variable.".to_string())),
+                None => Err(LoxError::new("Uninitialized variable.".to_string())),
                 Some(value) => Ok(value.clone()),
             }
         }
     }
 
-    fn unary(&self, expression: UnaryExpr) -> Result<Value, RError> {
+    fn unary(&self, expression: UnaryExpr) -> Result<Value, LoxError> {
         let right = self.evaluate(*expression.right)?;
         match expression.oper.token_type {
             TokenType::Minus => match right {
                 Value::Number(num) => Ok(Value::Number(-num)),
-                _ => Err(RError::new(String::from("Operand not a number."))),
+                _ => Err(LoxError::new(String::from("Operand not a number."))),
             },
             TokenType::Bang => match right {
                 Value::Bool(value) => Ok(Value::Bool(!value)),
                 _ => Ok(Value::Bool(false)),
             },
-            _ => Err(RError::new(String::from("Unknown unary operation"))),
+            _ => Err(LoxError::new(String::from("Unknown unary operation"))),
         }
     }
 
-    fn division(&self, left: f64, right: f64) -> Result<Value, RError> {
+    fn division(&self, left: f64, right: f64) -> Result<Value, LoxError> {
         if right == 0.0 {
-            Err(RError::new(String::from("Division by zero not allowed")))
+            Err(LoxError::new(String::from("Division by zero not allowed")))
         } else {
             Ok(Value::Number(left / right))
         }
     }
 
-    fn binary(&self, expression: BinaryExpr) -> Result<Value, RError> {
+    fn binary(&self, expression: BinaryExpr) -> Result<Value, LoxError> {
         let left = self.evaluate(*expression.left)?;
         let right = self.evaluate(*expression.right)?;
 
@@ -141,21 +139,21 @@ impl Interpreter {
                     TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
                     TokenType::Less => Ok(Value::Bool(l < r)),
                     TokenType::LessEqual => Ok(Value::Bool(l <= r)),
-                    _ => Err(RError::new(String::from("Unknown operation."))),
+                    _ => Err(LoxError::new(String::from("Unknown operation."))),
                 }
             },
             (Value::Bool(l), Value::Bool(r)) => {
                 match expression.oper.token_type {
                     TokenType::EqualEqual => Ok(Value::Bool(l == r)),
                     TokenType::BangEqual => Ok(Value::Bool(l != r)),
-                    _ => Err(RError::new(String::from("Unknown operation."))),
+                    _ => Err(LoxError::new(String::from("Unknown operation."))),
                 }
             },
             (Value::String(l), Value::String(r)) => {
                 match expression.oper.token_type {
                     TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
                     TokenType::BangEqual => Ok(Value::Bool(l != r)),
-                    _ => Err(RError::new(String::from("Unknown operation."))),
+                    _ => Err(LoxError::new(String::from("Unknown operation."))),
                 }
             },
             _ => {
@@ -164,7 +162,7 @@ impl Interpreter {
                     TokenType::BangEqual => Ok(Value::Bool(true)),
                     _ => {
                         let message = "Operands should be of same type.";
-                        Err(RError::new(message.to_string()))
+                        Err(LoxError::new(message.to_string()))
                     }
                 }
             }

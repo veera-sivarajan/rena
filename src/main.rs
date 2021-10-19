@@ -27,7 +27,7 @@ fn run(src: String, intp: &mut interpreter::Interpreter) -> Result<(), LoxError>
     let tokens = scanner.scan_tokens()?;
     let mut parser = parser::Parser::new(tokens);
     let ast = parser.parse()?;
-    intp.interpret(ast);
+    intp.interpret(ast)?;
     Ok(())
 }
 
