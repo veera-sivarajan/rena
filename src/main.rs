@@ -9,6 +9,7 @@ mod token;
 
 use std::io::stdout;
 use std::io::Write;
+use crate::err::LoxError;
 
 fn get_input() -> String {
     let mut input = String::new();
@@ -21,18 +22,13 @@ fn get_input() -> String {
     input
 }
 
-fn run(source: String, interpreter: &mut interpreter::Interpreter) {
-    let mut scanner = scanner::Scanner::new(source);
-    match scanner.scan_tokens() {
-        Ok(tokens) => {
-            let mut parser = parser::Parser::new(tokens);
-            match parser.parse() {
-                Ok(ast) => interpreter.interpret(ast),
-                Err(parse_error) => println!("{}", parse_error.to_string()),
-            }
-        }
-        Err(scan_error) => println!("{}", scan_error.to_string()),
-    }
+fn run(src: String, intp: &mut interpreter::Interpreter) -> Result<(), LoxError> {
+    let mut scanner = scanner::Scanner::new(src);
+    let tokens = scanner.scan_tokens()?;
+    let mut parser = parser::Parser::new(tokens);
+    let ast = parser.parse()?;
+    intp.interpret(ast);
+    Ok(())
 }
 
 fn main() {
@@ -42,7 +38,10 @@ fn main() {
         if input == "exit" {
             std::process::exit(0);
         } else {
-            run(input, &mut interpreter);
+            match run(input, &mut interpreter) {
+                Ok(()) => continue, 
+                Err(some_error) => println!("{}", some_error.to_string()),
+            }
         }
     }
 }

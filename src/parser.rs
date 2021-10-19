@@ -203,8 +203,8 @@ impl Parser {
             return Ok(expr);
         } else if self.type_match(vec![TokenType::Identifier]) {
             return Ok(Expr::Variable(VariableExpr { name: self.previous() }));
+        } else {
+            Err(LoxError::new("Expect expressions.".to_string()))
         }
-
-        Err(LoxError::new("Expect expressions.".to_string()))                   
     }
 }
