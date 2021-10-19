@@ -40,8 +40,9 @@ fn main() {
     loop {
         let input = get_input();
         if input == "exit" {
-            break;
+            std::process::exit(0);
+        } else {
+            run(input, &mut interpreter);
         }
-        run(input, &mut interpreter);
     }
 }
