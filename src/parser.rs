@@ -187,22 +187,22 @@ impl Parser {
 
     fn primary(&mut self) -> Result<Expr, LoxError> {
         if self.type_match(vec![TokenType::False]) {
-            return Ok(Expr::Boolean(false));
+            Ok(Expr::Boolean(false))
         } else if self.type_match(vec![TokenType::True]) {
-            return Ok(Expr::Boolean(true));
+            Ok(Expr::Boolean(true))
         } else if self.type_match(vec![TokenType::Number]) {
             let num_str = self.previous().lexeme;
             let num = num_str.parse::<f64>().unwrap();
-            return Ok(Expr::Number(NumberExpr { value: num }));
+            Ok(Expr::Number(NumberExpr { value: num }))
         } else if self.type_match(vec![TokenType::StrLit]) {
             let str_lit = self.previous().lexeme;
-            return Ok(Expr::String(str_lit));
+            Ok(Expr::String(str_lit))
         } else if self.type_match(vec![TokenType::LeftParen]) {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
-            return Ok(expr);
+            Ok(expr)
         } else if self.type_match(vec![TokenType::Identifier]) {
-            return Ok(Expr::Variable(VariableExpr { name: self.previous() }));
+            Ok(Expr::Variable(VariableExpr { name: self.previous() }))
         } else {
             Err(LoxError::new("Expect expressions.".to_string()))
         }
