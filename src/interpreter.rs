@@ -87,8 +87,10 @@ impl Interpreter {
         match self.memory.fetch(name.lexeme) {
             None => Err(LoxError::new(String::from("Undeclared variable."))),
             Some(variable) => match variable {
-                None => Err(LoxError::new("Uninitialized variable.".to_string())),
                 Some(value) => Ok(value.clone()),
+                None => {
+                    Err(LoxError::new("Uninitialized variable.".to_string()))
+                }
             }
         }
     }
