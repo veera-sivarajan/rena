@@ -106,13 +106,13 @@ impl Interpreter {
                 Value::Bool(value) => Ok(Value::Bool(!value)),
                 _ => Ok(Value::Bool(false)),
             },
-            _ => Err(LoxError::new(String::from("Unknown unary operation"))),
+            _ => Err(LoxError::new(String::from("Unknown unary operation."))),
         }
     }
 
     fn division(&self, left: f64, right: f64) -> Result<Value, LoxError> {
         if right == 0.0 {
-            Err(LoxError::new(String::from("Division by zero not allowed")))
+            Err(LoxError::new(String::from("Division by zero not allowed.")))
         } else {
             Ok(Value::Number(left / right))
         }
