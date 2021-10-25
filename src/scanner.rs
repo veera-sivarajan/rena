@@ -17,6 +17,7 @@ lazy_static! {
         hash_map.insert("true".to_owned(), TokenType::True);
         hash_map.insert("false".to_owned(), TokenType::False);
         hash_map.insert("print".to_owned(), TokenType::Print);
+        hash_map.insert("var".to_owned(), TokenType::Var);
         hash_map
     };
 }
