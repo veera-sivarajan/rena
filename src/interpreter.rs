@@ -155,6 +155,7 @@ impl Interpreter {
                 match expression.oper.token_type {
                     TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
                     TokenType::BangEqual => Ok(Value::Bool(l != r)),
+                    TokenType::Plus => Ok(Value::String(format!("{}{}", l, r))),
                     _ => Err(LoxError::new(String::from("Unknown operation."))),
                 }
             },
