@@ -40,7 +40,7 @@ fn main() {
         } else {
             match run(input, &mut interpreter) {
                 Ok(()) => continue, 
-                Err(some_error) => println!("{}", some_error.to_string()),
+                Err(some_error) => eprintln!("{}", some_error.to_string()),
             }
         }
     }
