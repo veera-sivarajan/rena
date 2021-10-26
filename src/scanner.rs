@@ -46,8 +46,17 @@ impl Scanner {
             .source
             .get(self.start..self.current)
             .expect("Source token is empty.");
-        self.tokens
-            .push(Token::new(token_type, text.to_string(), self.line));
+        match token_type {
+            TokenType::StrLit => {
+                let trim_str = &text[1..(text.len() - 1)];
+                self.tokens.
+                    push(Token::new(token_type, trim_str.to_string(), self.line));
+            },
+            _ => {
+                self.tokens
+                    .push(Token::new(token_type, text.to_string(), self.line));
+            },
+        }
         Ok(())
     }
 
