@@ -192,7 +192,6 @@ impl Parser {
             Ok(Expr::Boolean(true))
         } else if self.type_match(vec![TokenType::Number]) {
             let num_str = self.previous().lexeme;
-            // let num = num_str.parse::<f64>().unwrap();
             let num = num_str.parse::<f64>().expect("Cannot convert str to f64");
             Ok(Expr::Number(NumberExpr { value: num }))
         } else if self.type_match(vec![TokenType::StrLit]) {

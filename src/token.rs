@@ -1,9 +1,7 @@
 #[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
     LeftParen, RightParen, Dot, Minus, Plus, Slash, Star, Semicolon, Eof,
-
     Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
-
     Number, True, False, Unknown, Identifier, StrLit, Var, Print, 
 }
 

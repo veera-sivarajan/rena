@@ -49,8 +49,8 @@ impl Scanner {
         if token_type == TokenType::StrLit {
             // Trim surrounding quotes
             let trim_str = &text[1..(text.len() - 1)];
-            self.tokens.
-                push(Token::new(token_type, trim_str.to_string(), self.line));
+            self.tokens
+                .push(Token::new(token_type, trim_str.to_string(), self.line));
         } else {
             self.tokens
                 .push(Token::new(token_type, text.to_string(), self.line));
@@ -128,7 +128,6 @@ impl Scanner {
     fn advance(&mut self) -> char {
         let current_char = self.source.chars().nth(self.current).unwrap();
         self.current += 1;
-
         current_char
     }
 
@@ -152,14 +151,13 @@ impl Scanner {
         while self.peek().is_digit(10) {
             self.advance();
         }
-
+        
         if self.peek() == '.' && self.peek_next().is_digit(10) {
             self.advance();
             while self.peek().is_digit(10) {
                 self.advance();
             }
         }
-
         self.add_token(TokenType::Number)
     }
 
@@ -186,7 +184,6 @@ impl Scanner {
                 Some(t_type) => t_type.clone(),
             }
         };
-
         self.add_token(token_type)
     }
 
@@ -195,7 +192,6 @@ impl Scanner {
             self.start = self.current;
             self.scan_token()?
         }
-
         self.add_token(TokenType::Eof)?;
         Ok(self.tokens.clone())
     }
