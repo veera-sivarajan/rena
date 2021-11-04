@@ -8,6 +8,19 @@ pub struct Parser {
     current: usize,
 }
 
+macro_rules! matches {
+    ( $parser:ident, $( $x:expr ),* ) => {
+        {
+            if $( $parser.check($x) ) || * {
+                $parser.advance();
+                true
+            } else {
+                false
+            }
+        }
+    };
+}
+
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Parser {
         Parser { tokens, current: 0 }
@@ -28,16 +41,6 @@ impl Parser {
 
     fn previous(&mut self) -> Token {
         self.tokens[self.current - 1].clone()
-    }
-
-    fn type_match(&mut self, types: Vec<TokenType>) -> bool {
-        for t in types {
-            if self.check(t) {
-                self.advance();
-                return true;
-            }
-        }
-        false
     }
 
     fn advance(&mut self) -> Token {
@@ -67,7 +70,7 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Stmt, LoxError> {
-        if self.type_match(vec![TokenType::Var]) {
+        if matches!(self, TokenType::Var) {
             self.var_declaration()
         } else {
             self.statement()
@@ -75,7 +78,7 @@ impl Parser {
     }
 
     fn statement(&mut self) -> Result<Stmt, LoxError> {
-        if self.type_match(vec![TokenType::Print]) {
+        if matches!(self, TokenType::Print) {
             self.print_stmt()
         } else {
             self.expression_stmt()
@@ -96,7 +99,7 @@ impl Parser {
 
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
         let name = self.consume(TokenType::Identifier,"Expect variable name.")?;
-        if self.type_match(vec![TokenType::Equal]) {
+        if matches!(self, TokenType::Equal) {
             let init = self.expression()?;
             self.consume(TokenType::Semicolon, "Expect semicolon.")?;
             Ok(Stmt::Var(VarStmt { name, init: Some(Box::new(init)) }))
@@ -112,8 +115,7 @@ impl Parser {
 
     fn equality(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.comparison()?;
-        while self.type_match(vec![TokenType::BangEqual,
-                                   TokenType::EqualEqual]) {
+        while matches!(self, TokenType::BangEqual, TokenType::EqualEqual) {
             let oper = self.previous();
             let right = self.comparison()?;
             expr = Expr::Binary(BinaryExpr {
@@ -127,12 +129,8 @@ impl Parser {
 
     fn comparison(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.term()?;
-        while self.type_match(vec![
-            TokenType::Greater,
-            TokenType::GreaterEqual,
-            TokenType::Less,
-            TokenType::LessEqual,
-        ]) {
+        while matches!(self, TokenType::Greater, TokenType::GreaterEqual,
+                       TokenType::Less, TokenType::LessEqual) {
             let oper = self.previous();
             let right = self.term()?;
             expr = Expr::Binary(BinaryExpr {
@@ -146,7 +144,7 @@ impl Parser {
 
     fn term(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.factor()?;
-        while self.type_match(vec![TokenType::Minus, TokenType::Plus]) {
+        while matches!(self, TokenType::Minus, TokenType::Plus) {
             let oper = self.previous();
             let right = self.factor()?;
             expr = Expr::Binary(BinaryExpr {
@@ -160,7 +158,7 @@ impl Parser {
 
     fn factor(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.unary()?;
-        while self.type_match(vec![TokenType::Slash, TokenType::Star]) {
+        while matches!(self, TokenType::Slash, TokenType::Star) {
             let oper = self.previous();
             let right = self.unary()?;
             expr = Expr::Binary(BinaryExpr {
@@ -173,7 +171,7 @@ impl Parser {
     }
 
     fn unary(&mut self) -> Result<Expr, LoxError> {
-        if self.type_match(vec![TokenType::Bang, TokenType::Minus]) {
+        if matches!(self, TokenType::Bang, TokenType::Minus) {
             let oper = self.previous();
             let right = self.unary()?;
             Ok(Expr::Unary(UnaryExpr {
@@ -186,22 +184,22 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expr, LoxError> {
-        if self.type_match(vec![TokenType::False]) {
+        if matches!(self, TokenType::False) {
             Ok(Expr::Boolean(false))
-        } else if self.type_match(vec![TokenType::True]) {
+        } else if matches!(self, TokenType::True) {
             Ok(Expr::Boolean(true))
-        } else if self.type_match(vec![TokenType::Number]) {
+        } else if matches!(self, TokenType::Number) {
             let num_str = self.previous().lexeme;
             let num = num_str.parse::<f64>().expect("Cannot convert str to f64");
             Ok(Expr::Number(NumberExpr { value: num }))
-        } else if self.type_match(vec![TokenType::StrLit]) {
+        } else if matches!(self, TokenType::StrLit) {
             let str_lit = self.previous().lexeme;
             Ok(Expr::String(str_lit))
-        } else if self.type_match(vec![TokenType::LeftParen]) {
+        } else if matches!(self, TokenType::LeftParen) {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
             Ok(expr)
-        } else if self.type_match(vec![TokenType::Identifier]) {
+        } else if matches!(self, TokenType::Identifier) {
             Ok(Expr::Variable(VariableExpr { name: self.previous() }))
         } else {
             Err(LoxError::new("Expect expressions.".to_string()))
