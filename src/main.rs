@@ -2,7 +2,6 @@ mod scanner;
 mod token;
 mod err;
 mod parser;
-mod ast;
 mod interpreter;
 mod expr;
 mod stmt;
@@ -30,7 +29,6 @@ fn run(src: String, intp: &mut interpreter::Interpreter) -> Result<(), LoxError>
     let ast = parser.parse()?;
     intp.interpret(ast)?;
     Ok(())
-        
 }
 
 fn main() {

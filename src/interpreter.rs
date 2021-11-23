@@ -1,4 +1,5 @@
-use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr, VariableExpr};
+use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr, VariableExpr,
+                  GroupExpr};
 use crate::token::TokenType;
 use crate::err::LoxError;
 use crate::stmt::{Stmt, PrintStmt, ExpressionStmt, VarStmt};
@@ -75,7 +76,13 @@ impl Interpreter {
             Expr::Unary(expr) => self.unary(expr),
             Expr::Binary(expr) => self.binary(expr),
             Expr::Variable(expr) => self.variable(expr),
+            Expr::Group(expr) => self.group(expr),
+            Expr::Assign(expr) => unreachable!(),
         }
+    }
+
+    fn group(&self, expression: GroupExpr) -> Result<Value, LoxError> {
+        self.evaluate(*expression.expr)
     }
 
     fn unary(&self, expression: UnaryExpr) -> Result<Value, LoxError> {

@@ -8,5 +8,6 @@ pub fn _print_ast(expr: &Expr) {
         Expr::Binary(b_value) => println!("{}", b_value),
         Expr::Unary(u_value) => println!("{}", u_value),
         Expr::Variable(u_value) => println!("{}", u_value),
+        Expr::Assign(value) => println!("{}", value),
     }
 }

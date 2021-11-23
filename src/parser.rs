@@ -1,6 +1,7 @@
 use crate::err::LoxError;
 use crate::token::{Token, TokenType};
-use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr, VariableExpr};
+use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr, VariableExpr,
+                  AssignExpr, GroupExpr};
 use crate::stmt::{Stmt, PrintStmt, ExpressionStmt, VarStmt};
 
 pub struct Parser {
@@ -110,8 +111,29 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> {
-        self.equality()
+        self.assignment()
     }
+
+    fn assignment(&mut self) -> Result<Expr, LoxError> {
+        let expr = self.equality()?;
+        if matches!(self, TokenType::Equal) {
+            let _equals = self.previous();
+            let value = self.assignment()?;
+            match expr {
+                Expr::Variable(expr) => {
+                    return Ok(Expr::Assign(AssignExpr {
+                        name: expr.name,
+                        value: Box::new(value),
+                    }));
+                },
+                _ => Err(LoxError::new("Invalid assignment target.".
+                                       to_string())),
+            }
+        } else {
+            Ok(expr)
+        }
+    }
+        
 
     fn equality(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.comparison()?;
@@ -198,7 +220,7 @@ impl Parser {
         } else if matches!(self, TokenType::LeftParen) {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
-            return Ok(expr);
+            return Ok(Expr::Group(GroupExpr {expr: Box::new(expr)}));
         } else if matches!(self, TokenType::Identifier) {
             Ok(Expr::Variable(VariableExpr { name: self.previous() }))
         } else { 
