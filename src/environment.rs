@@ -18,7 +18,7 @@ impl Environment {
         self.values.get(&name)
     }
 
-    pub fn contains(&self, name: &String) -> bool {
+    pub fn contains(&self, name: &str) -> bool {
         self.values.contains_key(name)
     }
 

@@ -174,7 +174,7 @@ impl Scanner {
             self.scan_token()?
         }
         
-        self.add_token(TokenType::EOF)?;
+        self.add_token(TokenType::Eof)?;
         Ok(self.tokens.clone())
     }
 }

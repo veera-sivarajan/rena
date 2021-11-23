@@ -1,10 +1,12 @@
-use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr, VariableExpr,
+use crate::expr::{Expr, BinaryExpr, UnaryExpr, VariableExpr,
                   GroupExpr, AssignExpr};
 use crate::token::TokenType;
 use crate::err::LoxError;
 use crate::stmt::{Stmt, PrintStmt, ExpressionStmt, VarStmt};
 use crate::environment::Environment;
 use crate::token::Token;
+
+use float_eq::{float_eq, float_ne};
 
 #[derive(Clone)]
 pub enum Value {
@@ -42,7 +44,7 @@ impl Interpreter {
         match result {
             Value::Number(num) => format!("{}", num),
             Value::Bool(tof) => format!("{}", tof),
-            Value::String(value) => format!("{}", value),
+            Value::String(value) => value,
         }
     }
 
@@ -134,8 +136,10 @@ impl Interpreter {
         match (left, right) {
             (Value::Number(l), Value::Number(r)) => {
                 match expression.oper.token_type {
-                    TokenType::EqualEqual => Ok(Value::Bool(l == r)),
-                    TokenType::BangEqual => Ok(Value::Bool(l != r)),
+                    TokenType::EqualEqual => Ok(Value::Bool(
+                        float_eq!(l, r, ulps <=10))),
+                    TokenType::BangEqual => Ok(Value::Bool(
+                        float_ne!(l, r, ulps <= 10))),
                     TokenType::Plus => Ok(Value::Number(l + r)),
                     TokenType::Minus => Ok(Value::Number(l - r)),
                     TokenType::Slash => Ok(Value::Number(l / r)),

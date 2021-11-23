@@ -28,7 +28,7 @@ impl Parser {
     }
 
     fn is_end(&self) -> bool {
-        self.peek().token_type == TokenType::EOF
+        self.peek().token_type == TokenType::Eof
     }
 
     fn consume(&mut self,
@@ -121,10 +121,10 @@ impl Parser {
             let value = self.assignment()?;
             match expr {
                 Expr::Variable(expr) => {
-                    return Ok(Expr::Assign(AssignExpr {
+                    Ok(Expr::Assign(AssignExpr {
                         name: expr.name,
                         value: Box::new(value),
-                    }));
+                    }))
                 },
                 _ => Err(LoxError::new("Invalid assignment target.".
                                        to_string())),
@@ -142,7 +142,7 @@ impl Parser {
             let right = self.comparison()?;
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
-                oper: oper,
+                oper,
                 right: Box::new(right),
             });
         }
@@ -157,7 +157,7 @@ impl Parser {
             let right = self.term()?;
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
-                oper: oper,
+                oper,
                 right: Box::new(right),
             });
         }
@@ -171,7 +171,7 @@ impl Parser {
             let right = self.factor()?;
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
-                oper: oper,
+                oper,
                 right: Box::new(right),
             });
         }
@@ -185,7 +185,7 @@ impl Parser {
             let right = self.unary()?;
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
-                oper: oper,
+                oper,
                 right: Box::new(right),
             });
         }
@@ -207,20 +207,20 @@ impl Parser {
 
     fn primary(&mut self) -> Result<Expr, LoxError> {
         if matches!(self, TokenType::False) {
-            return Ok(Expr::Boolean(false));
+            Ok(Expr::Boolean(false))
         } else if matches!(self, TokenType::True) {
-            return Ok(Expr::Boolean(true));
+            Ok(Expr::Boolean(true))
         } else if matches!(self, TokenType::Number) {
             let num_str = self.previous().lexeme;
             let num = num_str.parse::<f64>().unwrap();
-            return Ok(Expr::Number(NumberExpr{value: num}));
+            Ok(Expr::Number(NumberExpr{value: num}))
         } else if matches!(self, TokenType::StrLit) {
             let str_lit = self.previous().lexeme;
-            return Ok(Expr::String(String::from(str_lit)));
+            Ok(Expr::String(str_lit))
         } else if matches!(self, TokenType::LeftParen) {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
-            return Ok(Expr::Group(GroupExpr {expr: Box::new(expr)}));
+            Ok(Expr::Group(GroupExpr {expr: Box::new(expr)}))
         } else if matches!(self, TokenType::Identifier) {
             Ok(Expr::Variable(VariableExpr { name: self.previous() }))
         } else { 
