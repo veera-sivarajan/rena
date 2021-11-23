@@ -192,6 +192,10 @@ impl Scanner {
             self.start = self.current;
             self.scan_token()?
         }
+<<<<<<< HEAD
+=======
+        
+>>>>>>> stream
         self.add_token(TokenType::Eof)?;
         Ok(self.tokens.clone())
     }

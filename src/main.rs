@@ -1,4 +1,5 @@
 mod err;
+<<<<<<< HEAD
 mod expr;
 mod stmt;
 mod interpreter;
@@ -6,6 +7,13 @@ mod environment;
 mod parser;
 mod scanner;
 mod token;
+=======
+mod parser;
+mod interpreter;
+mod expr;
+mod stmt;
+mod environment;
+>>>>>>> stream
 
 use std::io::stdout;
 use std::io::Write;
@@ -39,7 +47,11 @@ fn main() {
             std::process::exit(0);
         } else {
             match run(input, &mut interpreter) {
+<<<<<<< HEAD
                 Ok(()) => continue, 
+=======
+                Ok(()) => continue,
+>>>>>>> stream
                 Err(some_error) => eprintln!("{}", some_error.to_string()),
             }
         }

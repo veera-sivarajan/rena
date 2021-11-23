@@ -17,4 +17,18 @@ impl Environment {
     pub fn fetch(&self, name: String) -> Option<&Option<Value>> {
         self.values.get(&name)
     }
+<<<<<<< HEAD
+=======
+
+    pub fn contains(&self, name: &str) -> bool {
+        self.values.contains_key(name)
+    }
+
+    pub fn assign(&mut self, name: String, value: Value) {
+        self.values.insert(name, Some(value));
+    }
+            
+        
+        
+>>>>>>> stream
 }

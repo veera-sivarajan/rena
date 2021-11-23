@@ -7,5 +7,7 @@ pub fn print_ast(expr: &Expr) {
         Expr::Boolean(value) => println!("{}", value),
         Expr::Binary(b_value) => println!("{}", b_value),
         Expr::Unary(u_value) => println!("{}", u_value),
+        Expr::Variable(u_value) => println!("{}", u_value),
+        Expr::Assign(value) => println!("{}", value),
     }
 }
