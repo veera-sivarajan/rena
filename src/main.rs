@@ -22,11 +22,10 @@ fn get_input() -> String {
     input
 }
 
-fn run(src: String, intp: &mut interpreter::Interpreter) -> Result<(), LoxError> {
-    let mut scanner = scanner::Scanner::new(src);
-    let tokens = scanner.scan_tokens()?;
-    let mut parser = parser::Parser::new(tokens);
-    let ast = parser.parse()?;
+fn run(src: String,
+       intp: &mut interpreter::Interpreter) -> Result<(), LoxError> {
+    let tokens = scanner::Scanner::new(src).scan_tokens()?;
+    let ast = parser::Parser::new(tokens).parse()?;
     intp.interpret(ast)?;
     Ok(())
 }

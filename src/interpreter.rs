@@ -21,7 +21,7 @@ pub struct Interpreter {
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter { memory: Environment::new() }
+        Interpreter { memory: Environment::new(None) }
     }
 
     fn stringify(&self, result: Value) -> String {
@@ -68,12 +68,7 @@ impl Interpreter {
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
         match self.memory.fetch(name.lexeme) {
             None => Err(LoxError::new(String::from("Undeclared variable."))),
-            Some(variable) => match variable {
-                Some(value) => Ok(value.clone()),
-                None => {
-                    Err(LoxError::new("Uninitialized variable.".to_string()))
-                }
-            }
+            Some(value) => Ok(value.clone()),
         }
     }
 
@@ -123,13 +118,7 @@ impl Interpreter {
 
     fn assignment(&mut self, expression: AssignExpr) -> Result<Value, LoxError> {
         let value = self.evaluate(*expression.value)?;
-        if self.memory.contains(&expression.name.lexeme) {
-            let res = value.clone();
-            self.memory.assign(expression.name.lexeme, value);
-            Ok(res)
-        } else {
-            Err(LoxError::new(String::from("Undefined variable.")))
-        }
+        self.memory.assign(expression.name.lexeme, value)
     }
 
     fn group(&mut self, expression: GroupExpr) -> Result<Value, LoxError> {
