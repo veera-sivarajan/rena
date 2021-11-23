@@ -1,5 +1,5 @@
 use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr, VariableExpr,
-                  GroupExpr};
+                  GroupExpr, AssignExpr};
 use crate::token::TokenType;
 use crate::err::LoxError;
 use crate::stmt::{Stmt, PrintStmt, ExpressionStmt, VarStmt};
@@ -46,13 +46,13 @@ impl Interpreter {
         }
     }
 
-    fn print(&self, stmt: PrintStmt) -> Result<(), LoxError> {
+    fn print(&mut self, stmt: PrintStmt) -> Result<(), LoxError> {
         let value = self.evaluate(*stmt.expr)?;
         println!("{}", self.stringify(value));
         Ok(())
     }
 
-    fn expression(&self, stmt: ExpressionStmt) -> Result<(), LoxError> {
+    fn expression(&mut self, stmt: ExpressionStmt) -> Result<(), LoxError> {
         let _value = self.evaluate(*stmt.expr)?;
         Ok(())
     }
@@ -68,7 +68,7 @@ impl Interpreter {
         }
     }
 
-    fn evaluate(&self, expression: Expr) -> Result<Value, LoxError> {
+    fn evaluate(&mut self, expression: Expr) -> Result<Value, LoxError> {
         match expression {
             Expr::Number(expr) => Ok(Value::Number(expr.value)),
             Expr::String(expr) => Ok(Value::String(expr)),
@@ -77,15 +77,26 @@ impl Interpreter {
             Expr::Binary(expr) => self.binary(expr),
             Expr::Variable(expr) => self.variable(expr),
             Expr::Group(expr) => self.group(expr),
-            Expr::Assign(expr) => unreachable!(),
+            Expr::Assign(expr) => self.assignment(expr),
         }
     }
 
-    fn group(&self, expression: GroupExpr) -> Result<Value, LoxError> {
+    fn assignment(&mut self, expression: AssignExpr) -> Result<Value, LoxError> {
+        let value = self.evaluate(*expression.value)?;
+        if self.memory.contains(&expression.name.lexeme) {
+            let res = value.clone();
+            self.memory.assign(expression.name.lexeme, value);
+            Ok(res)
+        } else {
+            Err(LoxError::new(String::from("Undefined variable.")))
+        }
+    }
+
+    fn group(&mut self, expression: GroupExpr) -> Result<Value, LoxError> {
         self.evaluate(*expression.expr)
     }
 
-    fn unary(&self, expression: UnaryExpr) -> Result<Value, LoxError> {
+    fn unary(&mut self, expression: UnaryExpr) -> Result<Value, LoxError> {
         let right = self.evaluate(*expression.right)?;
         match expression.oper.token_type {
             TokenType::Minus => match right {
@@ -100,11 +111,11 @@ impl Interpreter {
         }
     }
 
-    fn variable(&self, expression: VariableExpr) -> Result<Value, LoxError> {
+    fn variable(&mut self, expression: VariableExpr) -> Result<Value, LoxError> {
         self.look_up(expression.name)
     }
 
-    fn look_up(&self, name: Token) -> Result<Value, LoxError> {
+    fn look_up(&mut self, name: Token) -> Result<Value, LoxError> {
         match self.memory.fetch(name.lexeme) {
             None => Err(LoxError::new(String::from("Undeclared variable."))),
             Some(variable) => match variable {
@@ -116,7 +127,7 @@ impl Interpreter {
         }
     }
 
-    fn binary(&self, expression: BinaryExpr) -> Result<Value, LoxError> {
+    fn binary(&mut self, expression: BinaryExpr) -> Result<Value, LoxError> {
         let left = self.evaluate(*expression.left)?;
         let right = self.evaluate(*expression.right)?;
 
