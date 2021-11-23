@@ -17,8 +17,6 @@ impl Environment {
     pub fn fetch(&self, name: String) -> Option<&Option<Value>> {
         self.values.get(&name)
     }
-<<<<<<< HEAD
-=======
 
     pub fn contains(&self, name: &str) -> bool {
         self.values.contains_key(name)
@@ -28,7 +26,4 @@ impl Environment {
         self.values.insert(name, Some(value));
     }
             
-        
-        
->>>>>>> stream
 }

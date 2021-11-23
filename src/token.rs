@@ -1,10 +1,5 @@
 #[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
-<<<<<<< HEAD
-    LeftParen, RightParen, Dot, Minus, Plus, Slash, Star, Semicolon, Eof,
-    Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
-    Number, True, False, Unknown, Identifier, StrLit, Var, Print, 
-=======
     LeftParen, RightParen, Dot, Minus, Plus, Slash, Star,
     Semicolon, Eof,
 
@@ -12,7 +7,6 @@ pub enum TokenType {
     Less, LessEqual,
 
     Number, True, False, Unknown, Identifier, StrLit, Print, Var,
->>>>>>> stream
 }
 
 #[derive(Clone, Debug)]
@@ -35,33 +29,6 @@ impl Token {
 impl TokenType {
     pub fn _to_string(&self) -> String {
         match self {
-<<<<<<< HEAD
-            TokenType::LeftParen => String::from("LeftParen"),
-            TokenType::RightParen => String::from("RightParen"),
-            TokenType::Dot => String::from("Dot"),
-            TokenType::Minus => String::from("Minus"),
-            TokenType::Plus => String::from("Plus"),
-            TokenType::Slash => String::from("Slash"),
-            TokenType::Star => String::from("Star"),
-            TokenType::Semicolon => String::from("Semicolon"),
-            TokenType::Bang => String::from("Bang"),
-            TokenType::BangEqual => String::from("BangEqual"),
-            TokenType::Equal => String::from("Equal"),
-            TokenType::EqualEqual => String::from("EqualEqual"),
-            TokenType::Greater => String::from("Greater"),
-            TokenType::GreaterEqual => String::from("GreaterEqual"),
-            TokenType::Less => String::from("Less"),
-            TokenType::LessEqual => String::from("LessEqual"),
-            TokenType::Number => String::from("Number"),
-            TokenType::True => String::from("True"),
-            TokenType::False => String::from("False"),
-            TokenType::Eof => String::from("EOF"),
-            TokenType::Unknown => String::from("Unknown"),
-            TokenType::Identifier => String::from("Identifier"),
-            TokenType::StrLit => String::from("String"),
-            TokenType::Var => String::from("Var"),
-            TokenType::Print => String::from("Print"),
-=======
             TokenType::LeftParen      => String::from("LeftParen"),
             TokenType::RightParen     => String::from("RightParen"),
             TokenType::Dot            => String::from("Dot"),
@@ -87,7 +54,6 @@ impl TokenType {
             TokenType::StrLit         => "String".to_string(),
             TokenType::Print          => String::from("Print"),
             TokenType::Var          => String::from("Var"),
->>>>>>> stream
         }
     }
 }

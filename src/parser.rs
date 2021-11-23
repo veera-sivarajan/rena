@@ -1,13 +1,8 @@
 use crate::err::LoxError;
-use crate::expr::{BinaryExpr, Expr, NumberExpr, UnaryExpr, VariableExpr};
 use crate::stmt::{Stmt, VarStmt, PrintStmt, ExpressionStmt};
 use crate::token::{Token, TokenType};
-<<<<<<< HEAD
-=======
 use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr, VariableExpr,
                   AssignExpr, GroupExpr};
-use crate::stmt::{Stmt, PrintStmt, ExpressionStmt, VarStmt};
->>>>>>> stream
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -83,8 +78,6 @@ impl Parser {
         }
     }
 
-<<<<<<< HEAD
-=======
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
         let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
         if matches!(self, TokenType::Equal) {
@@ -96,8 +89,6 @@ impl Parser {
             Ok(Stmt::Var(VarStmt { name, init: None }))
         }
     }
-
->>>>>>> stream
     fn statement(&mut self) -> Result<Stmt, LoxError> {
         if matches!(self, TokenType::Print) {
             self.print_stmt()
@@ -109,32 +100,13 @@ impl Parser {
     fn print_stmt(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-<<<<<<< HEAD
-        Ok(Stmt::Print(PrintStmt { expr: Box::new(expr) } ))
-=======
         Ok(Stmt::Print(PrintStmt { expr: Box::new(expr) }))
->>>>>>> stream
     }
 
     fn expression_stmt(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect semicolon.")?;
         Ok(Stmt::Expression(ExpressionStmt { expr: Box::new(expr) }))
-<<<<<<< HEAD
-    }
-
-    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
-        let name = self.consume(TokenType::Identifier,"Expect variable name.")?;
-        if matches!(self, TokenType::Equal) {
-            let init = self.expression()?;
-            self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-            Ok(Stmt::Var(VarStmt { name, init: Some(Box::new(init)) }))
-        } else {
-            self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-            Ok(Stmt::Var(VarStmt { name, init: None }))
-        }
-=======
->>>>>>> stream
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> {
@@ -239,30 +211,18 @@ impl Parser {
             Ok(Expr::Boolean(true))
         } else if matches!(self, TokenType::Number) {
             let num_str = self.previous().lexeme;
-<<<<<<< HEAD
             let num = num_str.parse::<f64>().expect("Cannot convert str to f64");
             Ok(Expr::Number(NumberExpr { value: num }))
-=======
-            let num = num_str.parse::<f64>().unwrap();
-            Ok(Expr::Number(NumberExpr{value: num}))
->>>>>>> stream
         } else if matches!(self, TokenType::StrLit) {
             let str_lit = self.previous().lexeme;
             Ok(Expr::String(str_lit))
         } else if matches!(self, TokenType::LeftParen) {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
-<<<<<<< HEAD
-            Ok(expr)
-        } else if matches!(self, TokenType::Identifier) {
-            Ok(Expr::Variable(VariableExpr { name: self.previous() }))
-        } else {
-=======
             Ok(Expr::Group(GroupExpr {expr: Box::new(expr)}))
         } else if matches!(self, TokenType::Identifier) {
             Ok(Expr::Variable(VariableExpr { name: self.previous() }))
         } else { 
->>>>>>> stream
             Err(LoxError::new("Expect expressions.".to_string()))
         }
     }

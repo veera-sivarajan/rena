@@ -9,7 +9,6 @@ pub enum Expr {
     Number(NumberExpr),
     Boolean(bool),
     String(String),
-    Variable(VariableExpr),
     Assign(AssignExpr),
     Group(GroupExpr),
 }
@@ -17,12 +16,14 @@ pub enum Expr {
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
-            Expr::Binary(expr) => expr.fmt(f),
-            Expr::Unary(expr) => expr.fmt(f),
-            Expr::Number(expr) => expr.fmt(f),
+            Expr::Binary(expr)  => expr.fmt(f),
+            Expr::Unary(expr)   => expr.fmt(f),
+            Expr::Number(expr)  => expr.fmt(f),
             Expr::Boolean(expr) => write!(f, "{}", expr),
-            Expr::String(expr) => write!(f, "{}", expr),
-            Expr::Variable(expr) => write!(f, "{}", expr),
+            Expr::String(expr)  => write!(f, "{}", expr),
+            Expr::Variable(expr)  => write!(f, "{}", expr),
+            Expr::Assign(expr)  => write!(f, "{}", expr),
+            Expr::Group(expr)  => write!(f, "{}", expr),
         }
     }
 }
@@ -81,32 +82,6 @@ pub struct VariableExpr {
 
 impl fmt::Display for VariableExpr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-<<<<<<< HEAD
-        write!(f, "{}", self.name.lexeme)
-    }
-}
-
-=======
-        match &*self {
-            Expr::Binary(expr)  => expr.fmt(f),
-            Expr::Unary(expr)   => expr.fmt(f),
-            Expr::Number(expr)  => expr.fmt(f),
-            Expr::Boolean(expr) => write!(f, "{}", expr),
-            Expr::String(expr)  => write!(f, "{}", expr),
-            Expr::Variable(expr)  => write!(f, "{}", expr),
-            Expr::Assign(expr)  => write!(f, "{}", expr),
-            Expr::Group(expr)  => write!(f, "{}", expr),
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct VariableExpr {
-    pub name: Token,
-}
-
-impl fmt::Display for VariableExpr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.name.lexeme)
     }
 }
@@ -122,4 +97,3 @@ impl fmt::Display for AssignExpr {
         write!(f, "Name: {}, Value: {}", self.name.lexeme, self.value)
     }
 }
->>>>>>> stream
