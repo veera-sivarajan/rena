@@ -59,8 +59,7 @@ impl Scanner {
     }
 
     fn matches(&mut self, expected: char) -> bool {
-        if self.is_end() ||
-            self.source.chars().nth(self.current).unwrap() != expected {
+        if self.is_end() || self.source.chars().nth(self.current).unwrap() != expected {
             false
         } else {
             self.current += 1;
@@ -79,6 +78,8 @@ impl Scanner {
             '/' => self.add_token(TokenType::Slash),
             '*' => self.add_token(TokenType::Star),
             ';' => self.add_token(TokenType::Semicolon),
+            '{' => self.add_token(TokenType::LeftBrace),
+            '}' => self.add_token(TokenType::RightBrace),
             '!' => {
                 let new_type = if self.matches('=') {
                     TokenType::BangEqual
@@ -151,7 +152,7 @@ impl Scanner {
         while self.peek().is_digit(10) {
             self.advance();
         }
-        
+
         if self.peek() == '.' && self.peek_next().is_digit(10) {
             self.advance();
             while self.peek().is_digit(10) {

@@ -1,15 +1,15 @@
-mod err;
-mod parser;
-mod interpreter;
-mod expr;
-mod stmt;
 mod environment;
-mod token;
+mod err;
+mod expr;
+mod interpreter;
+mod parser;
 mod scanner;
+mod stmt;
+mod token;
 
+use crate::err::LoxError;
 use std::io::stdout;
 use std::io::Write;
-use crate::err::LoxError;
 
 fn get_input() -> String {
     let mut input = String::new();
@@ -22,8 +22,7 @@ fn get_input() -> String {
     input
 }
 
-fn run(src: String,
-       intp: &mut interpreter::Interpreter) -> Result<(), LoxError> {
+fn run(src: String, intp: &mut interpreter::Interpreter) -> Result<(), LoxError> {
     let tokens = scanner::Scanner::new(src).scan_tokens()?;
     let ast = parser::Parser::new(tokens).parse()?;
     intp.interpret(ast)?;

@@ -1,8 +1,7 @@
 use crate::err::LoxError;
-use crate::stmt::{Stmt, VarStmt, PrintStmt, ExpressionStmt};
+use crate::expr::{AssignExpr, BinaryExpr, Expr, GroupExpr, NumberExpr, UnaryExpr, VariableExpr};
+use crate::stmt::{BlockStmt, ExpressionStmt, PrintStmt, Stmt, VarStmt};
 use crate::token::{Token, TokenType};
-use crate::expr::{Expr, BinaryExpr, NumberExpr, UnaryExpr, VariableExpr,
-                  AssignExpr, GroupExpr};
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -83,30 +82,49 @@ impl Parser {
         if matches!(self, TokenType::Equal) {
             let init = self.expression()?;
             self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-            Ok(Stmt::Var(VarStmt { name, init: Some(Box::new(init)) }))
+            Ok(Stmt::Var(VarStmt {
+                name,
+                init: Some(Box::new(init)),
+            }))
         } else {
             self.consume(TokenType::Semicolon, "Expect semicolon.")?;
             Ok(Stmt::Var(VarStmt { name, init: None }))
         }
     }
+
     fn statement(&mut self) -> Result<Stmt, LoxError> {
         if matches!(self, TokenType::Print) {
             self.print_stmt()
+        } else if matches!(self, TokenType::LeftBrace) {
+            self.block_stmt()
         } else {
             self.expression_stmt()
         }
     }
 
+    fn block_stmt(&mut self) -> Result<Stmt, LoxError> {
+        let mut statements = Vec::new();
+        while !self.check(TokenType::RightBrace) && !self.is_end() {
+            statements.push(self.declaration()?);
+        }
+        self.consume(TokenType::RightBrace, "Expect '}' after block.")?;
+        Ok(Stmt::Block(BlockStmt { statements }))
+    }
+
     fn print_stmt(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-        Ok(Stmt::Print(PrintStmt { expr: Box::new(expr) }))
+        Ok(Stmt::Print(PrintStmt {
+            expr: Box::new(expr),
+        }))
     }
 
     fn expression_stmt(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-        Ok(Stmt::Expression(ExpressionStmt { expr: Box::new(expr) }))
+        Ok(Stmt::Expression(ExpressionStmt {
+            expr: Box::new(expr),
+        }))
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> {
@@ -119,20 +137,16 @@ impl Parser {
             let _equals = self.previous();
             let value = self.assignment()?;
             match expr {
-                Expr::Variable(expr) => {
-                    Ok(Expr::Assign(AssignExpr {
-                        name: expr.name,
-                        value: Box::new(value),
-                    }))
-                },
-                _ => Err(LoxError::new("Invalid assignment target.".
-                                       to_string())),
+                Expr::Variable(expr) => Ok(Expr::Assign(AssignExpr {
+                    name: expr.name,
+                    value: Box::new(value),
+                })),
+                _ => Err(LoxError::new("Invalid assignment target.".to_string())),
             }
         } else {
             Ok(expr)
         }
     }
-        
 
     fn equality(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.comparison()?;
@@ -150,8 +164,13 @@ impl Parser {
 
     fn comparison(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.term()?;
-        while matches!(self, TokenType::Greater, TokenType::GreaterEqual,
-                       TokenType::Less, TokenType::LessEqual) {
+        while matches!(
+            self,
+            TokenType::Greater,
+            TokenType::GreaterEqual,
+            TokenType::Less,
+            TokenType::LessEqual
+        ) {
             let oper = self.previous();
             let right = self.term()?;
             expr = Expr::Binary(BinaryExpr {
@@ -219,10 +238,14 @@ impl Parser {
         } else if matches!(self, TokenType::LeftParen) {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
-            Ok(Expr::Group(GroupExpr {expr: Box::new(expr)}))
+            Ok(Expr::Group(GroupExpr {
+                expr: Box::new(expr),
+            }))
         } else if matches!(self, TokenType::Identifier) {
-            Ok(Expr::Variable(VariableExpr { name: self.previous() }))
-        } else { 
+            Ok(Expr::Variable(VariableExpr {
+                name: self.previous(),
+            }))
+        } else {
             Err(LoxError::new("Expect expressions.".to_string()))
         }
     }

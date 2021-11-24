@@ -1,10 +1,11 @@
-use crate::token::Token;
 use crate::expr::Expr;
+use crate::token::Token;
 
 pub enum Stmt {
     Var(VarStmt),
     Print(PrintStmt),
     Expression(ExpressionStmt),
+    Block(BlockStmt),
 }
 
 pub struct VarStmt {
@@ -20,3 +21,6 @@ pub struct ExpressionStmt {
     pub expr: Box<Expr>,
 }
 
+pub struct BlockStmt {
+    pub statements: Vec<Stmt>,
+}
