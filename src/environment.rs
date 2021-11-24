@@ -1,54 +1,75 @@
+use crate::err::LoxError;
 use crate::interpreter::Value;
 use std::collections::HashMap;
-use crate::err::LoxError;
 
+#[derive(Clone)]
 pub struct Environment {
-    values: HashMap<String, Option<Value>>,
-    enclosing: Option<Box<Environment>>,
+    frame_list: Vec<HashMap<String, Value>>,
 }
 
 impl Environment {
-    pub fn new(enclosing: Option<Environment>) -> Environment {
-        Environment { values: HashMap::new(),
-                      enclosing: enclosing.map(Box::new), 
+    pub fn new() -> Environment {
+        let mut frames = Vec::new();
+        frames.push(HashMap::new());
+        
+        Environment {
+            frame_list: frames,
         }
     }
 
-    pub fn define(&mut self, name: String, value: Option<Value>) {
-        self.values.insert(name, value);
+    pub fn new_block(&mut self) {
+        self.frame_list.insert(0, HashMap::new());
     }
 
-    pub fn fetch(&self, name: String) -> &Option<Value> {
-        if let Some(value) = self.values.get(&name) {
-            value
-        } else if self.enclosing.is_some() {
-            self.enclosing
-                .as_ref()
-                .unwrap()
-                .fetch(name)
+    pub fn exit_block(&mut self) {
+        self.frame_list.remove(0);
+    }
+
+    pub fn define(&mut self, name: String,
+                  value: Value) -> Result<(), LoxError> {
+        if let Some(frame) = self.frame_list.get_mut(0) {
+            frame.insert(name, value);
+            Ok(())
         } else {
-            &None
+            Err(LoxError::new(String::from("Frame not available.")))
         }
     }
 
-    pub fn contains(&self, name: &str) -> bool {
-        self.values.contains_key(name)
+    fn fetch_helper(&self, name: String,
+                    frame_count: usize) -> Option<&Value> {
+        if let Some(frame) = self.frame_list.get(frame_count) {
+            if frame.contains_key(&name) {
+                frame.get(&name)
+            } else {
+                println!("Element not found in frame.");
+                self.fetch_helper(name, frame_count + 1)
+            }
+        } else {
+            None
+        }
     }
 
-    pub fn assign(&mut self, name: String,
-                   value: Value) -> Result<Value, LoxError> {
-        if self.contains(&name) {
-            self.values.insert(name, Some(value.clone()));
-            Ok(value)
-        } else if self.enclosing.is_some() {
-            self.enclosing
-                .as_mut()
-                .unwrap()
-                .assign(name, value)
+    pub fn fetch(&self, name: String) -> Option<&Value> {
+        self.fetch_helper(name, 0)
+    }
+
+    fn assign_helper(&self, name: String,
+                     value: Value,
+                     frame_count: usize) -> Result<Value, LoxError> {
+        if let Some(frame) = self.frame_list.get(frame_count) {
+            if frame.contains_key(&name) {
+                frame.insert(name, value).unwrap();
+                Ok(value)
+            } else {
+                self.assign_helper(name, value, frame_count + 1)
+            }
         } else {
             Err(LoxError::new(String::from("Undefined variable.")))
         }
     }
 
-            
+    pub fn assign(&mut self, name: String,
+                  value: Value) -> Result<Value, LoxError> {
+        self.assign_helper(name, value, 0)
+    }
 }
