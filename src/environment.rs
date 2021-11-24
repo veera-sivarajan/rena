@@ -44,7 +44,7 @@ impl Environment {
             self.enclosing
                 .as_mut()
                 .unwrap()
-                .assign(name, value.clone())
+                .assign(name, value)
         } else {
             Err(LoxError::new(String::from("Undefined variable.")))
         }
