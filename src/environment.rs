@@ -53,12 +53,12 @@ impl Environment {
         self.fetch_helper(name, 0)
     }
 
-    fn assign_helper(&self, name: String,
+    fn assign_helper(&mut self, name: String,
                      value: Value,
                      frame_count: usize) -> Result<Value, LoxError> {
-        if let Some(frame) = self.frame_list.get(frame_count) {
+        if let Some(frame) = self.frame_list.get_mut(frame_count) {
             if frame.contains_key(&name) {
-                frame.insert(name, value).unwrap();
+                frame.insert(name, value.clone()).unwrap();
                 Ok(value)
             } else {
                 self.assign_helper(name, value, frame_count + 1)
