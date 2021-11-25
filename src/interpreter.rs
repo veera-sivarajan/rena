@@ -26,6 +26,28 @@ impl Interpreter {
         }
     }
 
+    pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
+        for statement in statements {
+            self.execute(statement)?
+        }
+        Ok(())
+    }
+
+    fn execute(&mut self, statement: Stmt) -> Result<(), LoxError> {
+        match statement {
+            Stmt::Print(stmt) => self.print(stmt),
+            Stmt::Expression(stmt) => self.expression(stmt),
+            Stmt::Var(stmt) => self.var(stmt),
+            Stmt::Block(stmt) => self.block(stmt),
+        }
+    }
+
+    fn print(&mut self, stmt: PrintStmt) -> Result<(), LoxError> {
+        let value = self.evaluate(*stmt.expr)?;
+        println!("{}", self.stringify(value));
+        Ok(())
+    }
+
     fn stringify(&self, result: Value) -> String {
         match result {
             Value::Number(num) => format!("{}", num),
@@ -34,10 +56,8 @@ impl Interpreter {
         }
     }
 
-    pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
-        for statement in statements {
-            self.execute(statement)?
-        }
+    fn expression(&mut self, stmt: ExpressionStmt) -> Result<(), LoxError> {
+        let _value = self.evaluate(*stmt.expr)?;
         Ok(())
     }
 
@@ -51,14 +71,19 @@ impl Interpreter {
         }
     }
 
-    fn print(&mut self, stmt: PrintStmt) -> Result<(), LoxError> {
-        let value = self.evaluate(*stmt.expr)?;
-        println!("{}", self.stringify(value));
-        Ok(())
-    }
+    fn block(&mut self, block: BlockStmt)-> Result<(), LoxError> {
+        self.memory.new_block();
 
-    fn expression(&mut self, stmt: ExpressionStmt) -> Result<(), LoxError> {
-        let _value = self.evaluate(*stmt.expr)?;
+        for stmt in block.statements {
+            match self.execute(stmt) {
+                Ok(()) => continue,
+                Err(error) => {
+                    self.memory.exit_block();
+                    return Err(error)
+                }
+            }
+        }
+        self.memory.exit_block();
         Ok(())
     }
 
@@ -94,31 +119,6 @@ impl Interpreter {
         } else {
             Ok(Value::Number(left / right))
         }
-    }
-
-    fn execute(&mut self, statement: Stmt) -> Result<(), LoxError> {
-        match statement {
-            Stmt::Print(stmt) => self.print(stmt),
-            Stmt::Expression(stmt) => self.expression(stmt),
-            Stmt::Var(stmt) => self.var(stmt),
-            Stmt::Block(stmt) => self.block(stmt),
-        }
-    }
-
-    fn block(&mut self, block: BlockStmt)-> Result<(), LoxError> {
-        self.memory.new_block();
-
-        for stmt in block.statements {
-            match self.execute(stmt) {
-                Ok(()) => continue,
-                Err(error) => {
-                    self.memory.exit_block();
-                    return Err(error)
-                }
-            }
-        }
-        self.memory.exit_block();
-        Ok(())
     }
 
     fn evaluate(&mut self, expression: Expr) -> Result<Value, LoxError> {
