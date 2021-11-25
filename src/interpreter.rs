@@ -10,6 +10,7 @@ use float_eq::{float_eq, float_ne};
 
 #[derive(Clone)]
 pub enum Value {
+    Nil,
     Number(f64),
     Bool(bool),
     String(String),
@@ -53,6 +54,7 @@ impl Interpreter {
             Value::Number(num) => format!("{}", num),
             Value::Bool(tof) => format!("{}", tof),
             Value::String(value) => value,
+            Value::Nil => "nil".to_string(),
         }
     }
 
@@ -66,8 +68,7 @@ impl Interpreter {
             let value = self.evaluate(*init)?;
             self.memory.define(decl.name.lexeme, value)
         } else {
-            self.memory.define(decl.name.lexeme, Value::String("nil".
-                                                               to_string()))
+            self.memory.define(decl.name.lexeme, Value::Nil)
         }
     }
 
@@ -93,8 +94,11 @@ impl Interpreter {
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
         match self.memory.fetch(name.lexeme) {
-            None => Err(LoxError::new(String::from("Undeclared variable."))),
-            Some(value) => Ok(value.clone()),
+            None => Err(LoxError::new(String::from("Variable not exist."))),
+            Some(value) => match value {
+                Value::Nil => Err(LoxError::new(String::from("initialized."))), 
+                _ => Ok(value.clone()),
+            }
         }
     }
 
@@ -123,6 +127,7 @@ impl Interpreter {
 
     fn evaluate(&mut self, expression: Expr) -> Result<Value, LoxError> {
         match expression {
+            Expr::Nil => Ok(Value::Nil),
             Expr::Number(expr) => Ok(Value::Number(expr.value)),
             Expr::String(expr) => Ok(Value::String(expr)),
             Expr::Boolean(expr) => Ok(Value::Bool(expr)),

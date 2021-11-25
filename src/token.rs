@@ -29,6 +29,7 @@ pub enum TokenType {
     StrLit,
     Print,
     Var,
+    Nil,
 }
 
 #[derive(Clone, Debug)]
@@ -78,6 +79,7 @@ impl TokenType {
             TokenType::Var => String::from("Var"),
             TokenType::LeftBrace => String::from("Leftbrace"),
             TokenType::RightBrace => String::from("Rightbrace"),
+            TokenType::Nil => String::from("Nil"),
         }
     }
 }

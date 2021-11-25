@@ -11,6 +11,7 @@ pub enum Expr {
     String(String),
     Assign(AssignExpr),
     Group(GroupExpr),
+    Nil,
 }
 
 impl fmt::Display for Expr {
@@ -24,6 +25,7 @@ impl fmt::Display for Expr {
             Expr::Variable(expr) => write!(f, "{}", expr),
             Expr::Assign(expr) => write!(f, "{}", expr),
             Expr::Group(expr) => write!(f, "{}", expr),
+            Expr::Nil => write!(f, "nil"),
         }
     }
 }

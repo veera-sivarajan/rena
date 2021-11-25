@@ -1,5 +1,6 @@
 use crate::err::LoxError;
-use crate::expr::{AssignExpr, BinaryExpr, Expr, GroupExpr, NumberExpr, UnaryExpr, VariableExpr};
+use crate::expr::{AssignExpr, BinaryExpr, Expr,
+                  GroupExpr, NumberExpr, UnaryExpr, VariableExpr};
 use crate::stmt::{BlockStmt, ExpressionStmt, PrintStmt, Stmt, VarStmt};
 use crate::token::{Token, TokenType};
 
@@ -224,7 +225,9 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expr, LoxError> {
-        if matches!(self, TokenType::False) {
+        if matches!(self, TokenType::Nil) {
+            Ok(Expr::Nil)
+        } else if matches!(self, TokenType::False) {
             Ok(Expr::Boolean(false))
         } else if matches!(self, TokenType::True) {
             Ok(Expr::Boolean(true))
