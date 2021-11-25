@@ -142,7 +142,7 @@ impl Parser {
                     name: expr.name,
                     value: Box::new(value),
                 })),
-                _ => Err(LoxError::new("Invalid assignment target.".to_string())),
+                _ => error!("Invalid assignment target."),
             }
         } else {
             Ok(expr)
@@ -249,7 +249,7 @@ impl Parser {
                 name: self.previous(),
             }))
         } else {
-            Err(LoxError::new("Expect expressions.".to_string()))
+            error!("Expect expressions.")
         }
     }
 }

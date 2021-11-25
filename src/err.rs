@@ -23,3 +23,9 @@ impl LoxError {
         LoxError { err }
     }
 }
+
+macro_rules! error {
+    ( $message:literal ) => {
+        Err(LoxError::new(String::from($message)))
+    };
+}

@@ -3,8 +3,7 @@ use crate::err::LoxError;
 use crate::expr::{AssignExpr, BinaryExpr, Expr, GroupExpr,
                   UnaryExpr, VariableExpr};
 use crate::stmt::{ExpressionStmt, PrintStmt, Stmt, VarStmt, BlockStmt};
-use crate::token::Token;
-use crate::token::TokenType;
+use crate::token::{Token, TokenType};
 
 use float_eq::{float_eq, float_ne};
 
@@ -94,9 +93,9 @@ impl Interpreter {
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
         match self.memory.fetch(name.lexeme) {
-            None => Err(LoxError::new(String::from("Variable not exist."))),
+            None => error!("Undeclared variable."),
             Some(value) => match value {
-                Value::Nil => Err(LoxError::new(String::from("initialized."))), 
+                Value::Nil => error!("Uninitialized variable."), 
                 _ => Ok(value.clone()),
             }
         }
@@ -107,19 +106,19 @@ impl Interpreter {
         match expression.oper.token_type {
             TokenType::Minus => match right {
                 Value::Number(num) => Ok(Value::Number(-num)),
-                _ => Err(LoxError::new(String::from("Operand not a number."))),
+                _ => error!("Operand not a number."),
             },
             TokenType::Bang => match right {
                 Value::Bool(value) => Ok(Value::Bool(!value)),
                 _ => Ok(Value::Bool(false)),
             },
-            _ => Err(LoxError::new(String::from("Unknown unary operation."))),
+            _ => error!("Unknown unary operation."),
         }
     }
 
     fn division(&self, left: f64, right: f64) -> Result<Value, LoxError> {
         if right == 0.0 {
-            Err(LoxError::new(String::from("Division by zero not allowed.")))
+            error!("Division by zero not allowed.")
         } else {
             Ok(Value::Number(left / right))
         }
@@ -164,26 +163,23 @@ impl Interpreter {
                 TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
                 TokenType::Less => Ok(Value::Bool(l < r)),
                 TokenType::LessEqual => Ok(Value::Bool(l <= r)),
-                _ => Err(LoxError::new(String::from("Unknown operation."))),
+                _ => error!("Unknown operation."),
             },
             (Value::Bool(l), Value::Bool(r)) => match expression.oper.token_type {
                 TokenType::EqualEqual => Ok(Value::Bool(l == r)),
                 TokenType::BangEqual => Ok(Value::Bool(l != r)),
-                _ => Err(LoxError::new(String::from("Unknown operation."))),
+                _ => error!("Unknown operation."),
             },
             (Value::String(l), Value::String(r)) => match expression.oper.token_type {
                 TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
                 TokenType::BangEqual => Ok(Value::Bool(l.ne(&r))),
                 TokenType::Plus => Ok(Value::String(format!("{}{}", l, r))),
-                _ => Err(LoxError::new(String::from("Unknown operation."))),
+                _ => error!("Unknown operation."),
             },
             _ => match expression.oper.token_type {
                 TokenType::EqualEqual => Ok(Value::Bool(false)),
                 TokenType::BangEqual => Ok(Value::Bool(true)),
-                _ => {
-                    let message = "Operand should be of same type.";
-                    Err(LoxError::new(message.to_string()))
-                }
+                _ => error!("Operands should be of same type."),
             },
         }
     }

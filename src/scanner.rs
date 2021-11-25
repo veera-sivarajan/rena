@@ -170,7 +170,7 @@ impl Scanner {
         if !self.is_end() {
             self.advance();
         } else {
-            return Err(LoxError::new(String::from("Unterminated string.")));
+            return error!("Unterminated string.");
         }
         self.add_token(TokenType::StrLit)
     }

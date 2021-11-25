@@ -1,5 +1,6 @@
-mod environment;
+#[macro_use]
 mod err;
+mod environment;
 mod expr;
 mod interpreter;
 mod parser;

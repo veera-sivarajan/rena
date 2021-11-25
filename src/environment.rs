@@ -31,7 +31,7 @@ impl Environment {
             frame.insert(name, value);
             Ok(())
         } else {
-            Err(LoxError::new(String::from("Frame not available.")))
+            error!("Frame not available.")
         }
     }
 
@@ -52,7 +52,7 @@ impl Environment {
                 return Ok(value);
             }
         }
-        Err(LoxError::new(String::from("Undefined variable.")))
+        error!("Undefined variable.")
     }
         
 }
