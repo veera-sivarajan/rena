@@ -36,7 +36,7 @@ impl Parser {
         if self.check(token_type) {
             Ok(self.advance())
         } else {
-            Err(LoxError::new(message.to_string()))
+            error!(message)
         }
     }
 

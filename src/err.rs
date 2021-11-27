@@ -25,7 +25,7 @@ impl LoxError {
 }
 
 macro_rules! error {
-    ( $message:literal ) => {
+    ( $message:expr) => {
         Err(LoxError::new(String::from($message)))
     };
 }

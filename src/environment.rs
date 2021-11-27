@@ -11,7 +11,7 @@ impl Environment {
     pub fn new() -> Environment {
         let mut frames = Vec::new();
         frames.push(HashMap::new());
-        
+
         Environment {
             frame_list: frames,
         }
@@ -54,5 +54,5 @@ impl Environment {
         }
         error!("Undefined variable.")
     }
-        
+
 }
