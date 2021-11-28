@@ -17,6 +17,7 @@ lazy_static! {
         hash_map.insert("true".to_owned(), TokenType::True);
         hash_map.insert("false".to_owned(), TokenType::False);
         hash_map.insert("print".to_owned(), TokenType::Print);
+
         hash_map.insert("var".to_owned(), TokenType::Var);
         hash_map.insert("nil".to_owned(), TokenType::Nil);
         hash_map
@@ -114,6 +115,10 @@ impl Scanner {
                 self.add_token(new_type)
             }
             ' ' | '\r' | '\t' => Ok(()), // skip whitespaces, tab and enter?
+            '\n' => {
+                self.line += 1;
+                Ok(())
+            }
             '"' => self.scan_string(),
             _ => {
                 if c.is_digit(10) {
