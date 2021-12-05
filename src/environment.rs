@@ -18,16 +18,17 @@ impl Environment {
     }
 
     pub fn new_block(&mut self) {
-        self.frame_list.insert(0, HashMap::new());
+        self.frame_list.push(HashMap::new());
     }
-
+    
     pub fn exit_block(&mut self) {
-        self.frame_list.remove(0);
+        self.frame_list.pop();
     }
 
     pub fn define(&mut self,
                   name: String, value: Value) -> Result<(), LoxError> {
-        if let Some(frame) = self.frame_list.get_mut(0) {
+        let last_ele = self.frame_list.len() - 1;
+        if let Some(frame) = self.frame_list.get_mut(last_ele) {
             frame.insert(name, value);
             Ok(())
         } else {
@@ -36,7 +37,7 @@ impl Environment {
     }
 
     pub fn fetch(&self, name: String) -> Option<&Value> {
-        for frame in &self.frame_list {
+        for frame in self.frame_list.iter().rev() {
             if frame.contains_key(&name) {
                 return frame.get(&name);
             }
@@ -46,7 +47,7 @@ impl Environment {
 
     pub fn assign(&mut self, name: String,
                   value: Value) -> Result<Value, LoxError> {
-        for frame in &mut self.frame_list {
+        for frame in self.frame_list.iter_mut().rev() {
             if frame.contains_key(&name) {
                 frame.insert(name, value.clone());
                 return Ok(value);
