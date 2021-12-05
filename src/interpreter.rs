@@ -163,18 +163,17 @@ impl Interpreter {
                 TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
                 TokenType::Less => Ok(Value::Bool(l < r)),
                 TokenType::LessEqual => Ok(Value::Bool(l <= r)),
-                _ => error!("Unknown operation."),
+                _ => error!("Unknown operation for numbers."),
             },
             (Value::Bool(l), Value::Bool(r)) => match expression.oper.token_type {
                 TokenType::EqualEqual => Ok(Value::Bool(l == r)),
                 TokenType::BangEqual => Ok(Value::Bool(l != r)),
-                _ => error!("Unknown operation."),
+                _ => error!("Unknown operation for bools."),
             },
             (Value::String(l), Value::String(r)) => match expression.oper.token_type {
                 TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
                 TokenType::BangEqual => Ok(Value::Bool(l.ne(&r))),
-                TokenType::Plus => Ok(Value::String(format!("{}{}", l, r))),
-                _ => error!("Unknown operation."),
+                _ => error!("Unknown operation for strings."),
             },
             _ => match expression.oper.token_type {
                 TokenType::EqualEqual => Ok(Value::Bool(false)),
