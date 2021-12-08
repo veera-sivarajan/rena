@@ -40,7 +40,7 @@ impl Parser {
         }
     }
 
-    fn previous(&mut self) -> Token {
+    fn previous(&self) -> Token {
         self.tokens[self.current - 1].clone()
     }
 
@@ -71,25 +71,46 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Stmt, LoxError> {
-        if matches!(self, TokenType::Var) {
-            self.var_declaration()
+        if matches!(self, TokenType::Var, TokenType::Let) {
+            self.var_declaration(self.previous().token_type)
         } else {
             self.statement()
         }
     }
 
-    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
-        let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
-        if matches!(self, TokenType::Equal) {
-            let init = self.expression()?;
-            self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-            Ok(Stmt::Var(VarStmt {
-                name,
-                init: Some(Box::new(init)),
-            }))
-        } else {
-            self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-            Ok(Stmt::Var(VarStmt { name, init: None }))
+    fn var_declaration(&mut self, kind: TokenType) -> Result<Stmt, LoxError> {
+        match kind {
+            TokenType::Var => {
+                let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
+                if matches!(self, TokenType::Equal) {
+                    let init = self.expression()?;
+                    self.consume(TokenType::Semicolon, "Expect semicolon.")?;
+                    Ok(Stmt::Var(VarStmt {
+                        name,
+                        init: Some(Box::new(init)),
+                    }))
+                } else {
+                    self.consume(TokenType::Semicolon, "Expect semicolon.")?;
+                    Ok(Stmt::Var(VarStmt { name, init: None }))
+                }
+            },
+            TokenType::Let => {
+                println!("LET DECLARATION!!!");
+                let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
+                if matches!(self, TokenType::Equal) {
+                    let init = self.expression()?;
+                    self.consume(TokenType::Semicolon, "Expect semicolon.")?;
+                    Ok(Stmt::Var(VarStmt {
+                        name,
+                        init: Some(Box::new(init)),
+                    }))
+                } else {
+                    self.consume(TokenType::Semicolon, "Expect semicolon.")?;
+                    Ok(Stmt::Var(VarStmt { name, init: None }))
+                }
+            },
+            _ => unreachable!(),
+            
         }
     }
 

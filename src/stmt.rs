@@ -6,9 +6,15 @@ pub enum Stmt {
     Print(PrintStmt),
     Expression(ExpressionStmt),
     Block(BlockStmt),
+    Let(LetStmt),
 }
 
 pub struct VarStmt {
+    pub name: Token,
+    pub init: Option<Box<Expr>>,
+}
+
+pub struct LetStmt {
     pub name: Token,
     pub init: Option<Box<Expr>>,
 }

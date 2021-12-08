@@ -26,10 +26,10 @@ pub enum TokenType {
     False,
     Unknown,
     Identifier,
-    StrLit,
-    Print,
+    StrLit, Print,
     Var,
     Nil,
+    Let,
 }
 
 #[derive(Clone, Debug)]
@@ -80,6 +80,7 @@ impl TokenType {
             TokenType::LeftBrace => String::from("Leftbrace"),
             TokenType::RightBrace => String::from("Rightbrace"),
             TokenType::Nil => String::from("Nil"),
+            TokenType::Let => String::from("Let"),
         }
     }
 }

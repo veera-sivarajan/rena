@@ -39,6 +39,7 @@ impl Interpreter {
             Stmt::Expression(stmt) => self.expression(stmt),
             Stmt::Var(stmt) => self.var(stmt),
             Stmt::Block(stmt) => self.block(stmt),
+            Stmt::Let(stmt) => Ok(()),
         }
     }
 
@@ -116,11 +117,11 @@ impl Interpreter {
         }
     }
 
-    fn division(&self, left: f64, right: f64) -> Result<Value, LoxError> {
-        if right == 0.0 {
+    fn division(&self, numer: f64, denom: f64) -> Result<Value, LoxError> {
+        if denom == 0.0 {
             error!("Division by zero not allowed.")
         } else {
-            Ok(Value::Number(left / right))
+            Ok(Value::Number(numer / denom))
         }
     }
 
