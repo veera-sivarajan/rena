@@ -10,10 +10,7 @@ mod token;
 
 use crate::interpreter::Interpreter;
 use crate::err::LoxError;
-use std::io::stdout;
-use std::io::Write;
-use std::fs;
-use std::env;
+use std::{fs, env, io::{stdout, Write}};
 
 fn get_input() -> String {
     let mut input = String::new();
@@ -47,11 +44,13 @@ fn main() {
             let input = get_input();
             if input == "exit" {
                 std::process::exit(0);
-            } else {
+            } else if input.len() > 0 {
                 match run(input, &mut interpreter) {
                     Ok(()) => continue,
                     Err(some_error) => eprintln!("{}", some_error.to_string()),
                 }
+            } else {
+                continue;
             }
         }
     } else {
