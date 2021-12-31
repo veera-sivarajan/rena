@@ -1,7 +1,7 @@
 use crate::err::LoxError;
 use crate::expr::{AssignExpr, BinaryExpr, Expr,
                   GroupExpr, NumberExpr, UnaryExpr, VariableExpr};
-use crate::stmt::{BlockStmt, ExpressionStmt, PrintStmt, Stmt, VarStmt};
+use crate::stmt::{BlockStmt, ExpressionStmt, PrintStmt, Stmt, VarStmt, LetStmt, IfStmt};
 use crate::token::{Token, TokenType};
 
 pub struct Parser {
@@ -79,38 +79,29 @@ impl Parser {
     }
 
     fn var_declaration(&mut self, kind: TokenType) -> Result<Stmt, LoxError> {
-        match kind {
-            TokenType::Var => {
-                let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
-                if matches!(self, TokenType::Equal) {
-                    let init = self.expression()?;
-                    self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-                    Ok(Stmt::Var(VarStmt {
-                        name,
-                        init: Some(Box::new(init)),
-                    }))
-                } else {
-                    self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-                    Ok(Stmt::Var(VarStmt { name, init: None }))
-                }
-            },
-            TokenType::Let => {
-                println!("LET DECLARATION!!!");
-                let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
-                if matches!(self, TokenType::Equal) {
-                    let init = self.expression()?;
-                    self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-                    Ok(Stmt::Var(VarStmt {
-                        name,
-                        init: Some(Box::new(init)),
-                    }))
-                } else {
-                    self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-                    Ok(Stmt::Var(VarStmt { name, init: None }))
-                }
-            },
-            _ => unreachable!(),
-            
+        let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
+        if matches!(self, TokenType::Equal) {
+            let init = self.expression()?;
+            self.consume(TokenType::Semicolon, "Expect semicolon.")?;
+            match kind {
+                TokenType::Var => Ok(Stmt::Var(VarStmt {
+                    name,
+                    init: Some(Box::new(init)),
+                })),
+                TokenType::Let => Ok(Stmt::Let(LetStmt {
+                    name,
+                    init: Some(Box::new(init)),
+                })),
+                _ => unreachable!(),
+            }
+        } else {
+            self.consume(TokenType::Semicolon, "Expect semicolon.")?;
+            match kind {
+                TokenType::Var => Ok(Stmt::Var(VarStmt { name, init: None })),
+                TokenType::Let => 
+                    error!("Immutable variables should be defined."),
+                _ => unreachable!(),
+            }
         }
     }
 
@@ -119,9 +110,29 @@ impl Parser {
             self.print_stmt()
         } else if matches!(self, TokenType::LeftBrace) {
             self.block_stmt()
-        } else {
+        } else if matches!(self, TokenType::If) {
+            self.if_stmt()
+        }
+        else {
             self.expression_stmt()
         }
+    }
+
+    fn if_stmt(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
+        let condition = self.expression()?;
+        self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
+        let then_branch = self.statement()?;
+        let mut else_branch = None;
+        if matches!(self, TokenType::Else) {
+            else_branch = Some(self.statement()?);
+        }
+        let if_node = IfStmt {
+            condition: Box::new(condition),
+            then_branch: Box::new(then_branch),
+            else_branch: Box::new(else_branch),
+        };
+        Ok(Stmt::If(if_node))
     }
 
     fn block_stmt(&mut self) -> Result<Stmt, LoxError> {
@@ -154,6 +165,7 @@ impl Parser {
     }
 
     fn assignment(&mut self) -> Result<Expr, LoxError> {
+        // println!("assignment()");
         let expr = self.equality()?;
         if matches!(self, TokenType::Equal) {
             let _equals = self.previous();

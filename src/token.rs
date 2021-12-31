@@ -30,6 +30,8 @@ pub enum TokenType {
     Var,
     Nil,
     Let,
+    If,
+    Else,
 }
 
 #[derive(Clone, Debug)]
@@ -81,6 +83,8 @@ impl TokenType {
             TokenType::RightBrace => String::from("Rightbrace"),
             TokenType::Nil => String::from("Nil"),
             TokenType::Let => String::from("Let"),
+            TokenType::If => String::from("If"),
+            TokenType::Else => String::from("Else"),
         }
     }
 }

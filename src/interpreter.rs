@@ -2,7 +2,7 @@ use crate::environment::Environment;
 use crate::err::LoxError;
 use crate::expr::{AssignExpr, BinaryExpr, Expr, GroupExpr,
                   UnaryExpr, VariableExpr};
-use crate::stmt::{ExpressionStmt, PrintStmt, Stmt, VarStmt, BlockStmt};
+use crate::stmt::{ExpressionStmt, PrintStmt, Stmt, VarStmt, BlockStmt, IfStmt};
 use crate::token::{Token, TokenType};
 
 use float_eq::{float_eq, float_ne};
@@ -39,8 +39,26 @@ impl Interpreter {
             Stmt::Expression(stmt) => self.expression(stmt),
             Stmt::Var(stmt) => self.var(stmt),
             Stmt::Block(stmt) => self.block(stmt),
-            Stmt::Let(stmt) => Ok(()),
+            Stmt::Let(_stmt) => Ok(()),
+            Stmt::If(stmt) => self.execute_if(stmt),
         }
+    }
+
+    fn is_truthy(&self, object: Expr) -> bool {
+        match object {
+            Expr::Nil => false,
+            Expr::Boolean(value) => value,
+            _ => true,
+        }
+    }
+
+    fn execute_if(&mut self, statement: IfStmt) -> Result<(), LoxError> {
+        if self.is_truthy(*statement.condition) {
+            self.execute(*statement.then_branch)?
+        } else if statement.else_branch.is_some() {
+            self.execute(statement.else_branch.unwrap())?
+        }
+        Ok(())
     }
 
     fn print(&mut self, stmt: PrintStmt) -> Result<(), LoxError> {
