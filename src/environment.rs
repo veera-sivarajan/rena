@@ -9,11 +9,8 @@ pub struct Environment {
 
     impl Environment {
         pub fn new() -> Environment {
-            let mut frames = Vec::new();
-            frames.push(HashMap::new());
-
             Environment {
-                frame_list: frames,
+                frame_list: vec![HashMap::new()],
             }
         }
 

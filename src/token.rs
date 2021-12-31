@@ -1,4 +1,4 @@
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum TokenType {
     LeftParen,
     RightParen,
@@ -32,6 +32,7 @@ pub enum TokenType {
     Let,
     If,
     Else,
+    While,
 }
 
 #[derive(Clone, Debug)]
@@ -85,6 +86,7 @@ impl TokenType {
             TokenType::Let => String::from("Let"),
             TokenType::If => String::from("If"),
             TokenType::Else => String::from("Else"),
+            TokenType::While => String::from("While"),
         }
     }
 }

@@ -23,6 +23,7 @@ lazy_static! {
         hash_map.insert("let".to_owned(), TokenType::Let);
         hash_map.insert("if".to_owned(), TokenType::If);
         hash_map.insert("else".to_owned(), TokenType::Else);
+        hash_map.insert("while".to_owned(), TokenType::While);
         hash_map
     };
 }
@@ -191,7 +192,7 @@ impl Scanner {
         let token_type = {
             match KEYWORDS.get(sub_string) {
                 None => TokenType::Identifier,
-                Some(t_type) => t_type.clone(),
+                Some(t_type) => *t_type,
             }
         };
         self.add_token(token_type)

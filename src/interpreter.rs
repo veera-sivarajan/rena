@@ -2,7 +2,8 @@ use crate::environment::Environment;
 use crate::err::LoxError;
 use crate::expr::{AssignExpr, BinaryExpr, Expr, GroupExpr,
                   UnaryExpr, VariableExpr};
-use crate::stmt::{ExpressionStmt, PrintStmt, Stmt, VarStmt, BlockStmt, IfStmt};
+use crate::stmt::{ExpressionStmt, PrintStmt, Stmt, VarStmt, BlockStmt, IfStmt,
+                  WhileStmt};
 use crate::token::{Token, TokenType};
 
 use float_eq::{float_eq, float_ne};
@@ -28,12 +29,12 @@ impl Interpreter {
 
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for statement in statements {
-            self.execute(statement)?
+            self.execute(&statement)?
         }
         Ok(())
     }
 
-    fn execute(&mut self, statement: Stmt) -> Result<(), LoxError> {
+    fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
         match statement {
             Stmt::Print(stmt) => self.print(stmt),
             Stmt::Expression(stmt) => self.expression(stmt),
@@ -41,28 +42,39 @@ impl Interpreter {
             Stmt::Block(stmt) => self.block(stmt),
             Stmt::Let(_stmt) => Ok(()),
             Stmt::If(stmt) => self.execute_if(stmt),
+            Stmt::While(stmt) => self.execute_while(stmt),
         }
     }
 
-    fn is_truthy(&self, object: Expr) -> bool {
+    fn is_truthy(&self, object: Value) -> bool {
         match object {
-            Expr::Nil => false,
-            Expr::Boolean(value) => value,
+            Value::Nil => false,
+            Value::Bool(value) => value,
             _ => true,
         }
     }
 
-    fn execute_if(&mut self, statement: IfStmt) -> Result<(), LoxError> {
-        if self.is_truthy(*statement.condition) {
-            self.execute(*statement.then_branch)?
-        } else if statement.else_branch.is_some() {
-            self.execute(statement.else_branch.unwrap())?
+    fn execute_while(&mut self, statement: &WhileStmt) -> Result<(), LoxError> {
+        let mut value = self.evaluate(&statement.condition)?;
+        while self.is_truthy(value) {
+            self.execute(&statement.body)?;
+            value = self.evaluate(&statement.condition)?;
         }
         Ok(())
     }
 
-    fn print(&mut self, stmt: PrintStmt) -> Result<(), LoxError> {
-        let value = self.evaluate(*stmt.expr)?;
+    fn execute_if(&mut self, statement: &IfStmt) -> Result<(), LoxError> {
+        let value = self.evaluate(&statement.condition)?;
+        if self.is_truthy(value) {
+            self.execute(&statement.then_branch)?
+        } else if let Some(else_branch) = &statement.else_branch {
+            self.execute(else_branch)?;
+        }
+        Ok(())
+    }
+
+    fn print(&mut self, stmt: &PrintStmt) -> Result<(), LoxError> {
+        let value = self.evaluate(&stmt.expr)?;
         println!("{}", self.stringify(value));
         Ok(())
     }
@@ -76,24 +88,24 @@ impl Interpreter {
         }
     }
 
-    fn expression(&mut self, stmt: ExpressionStmt) -> Result<(), LoxError> {
-        let _value = self.evaluate(*stmt.expr)?;
+    fn expression(&mut self, stmt: &ExpressionStmt) -> Result<(), LoxError> {
+        let _value = self.evaluate(&stmt.expr)?;
         Ok(())
     }
 
-    fn var(&mut self, decl: VarStmt) -> Result<(), LoxError> {
-        if let Some(init) = decl.init {
-            let value = self.evaluate(*init)?;
-            self.memory.define(decl.name.lexeme, value)
+    fn var(&mut self, decl: &VarStmt) -> Result<(), LoxError> {
+        if let Some(init) = &decl.init {
+            let value = self.evaluate(init)?;
+            self.memory.define(decl.name.lexeme.clone(), value)
         } else {
-            self.memory.define(decl.name.lexeme, Value::Nil)
+            self.memory.define(decl.name.lexeme.clone(), Value::Nil)
         }
     }
 
-    fn block(&mut self, block: BlockStmt)-> Result<(), LoxError> {
+    fn block(&mut self, block: &BlockStmt)-> Result<(), LoxError> {
         self.memory.new_block();
 
-        for stmt in block.statements {
+        for stmt in &block.statements {
             match self.execute(stmt) {
                 Ok(()) => continue,
                 Err(error) => {
@@ -106,8 +118,8 @@ impl Interpreter {
         Ok(())
     }
 
-    fn variable(&self, expression: VariableExpr) -> Result<Value, LoxError> {
-        self.look_up(expression.name)
+    fn variable(&self, expression: &VariableExpr) -> Result<Value, LoxError> {
+        self.look_up(expression.name.clone())
     }
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
@@ -120,8 +132,8 @@ impl Interpreter {
         }
     }
 
-    fn unary(&mut self, expression: UnaryExpr) -> Result<Value, LoxError> {
-        let right = self.evaluate(*expression.right)?;
+    fn unary(&mut self, expression: &UnaryExpr) -> Result<Value, LoxError> {
+        let right = self.evaluate(&expression.right)?;
         match expression.oper.token_type {
             TokenType::Minus => match right {
                 Value::Number(num) => Ok(Value::Number(-num)),
@@ -143,12 +155,12 @@ impl Interpreter {
         }
     }
 
-    fn evaluate(&mut self, expression: Expr) -> Result<Value, LoxError> {
+    fn evaluate(&mut self, expression: &Expr) -> Result<Value, LoxError> {
         match expression {
             Expr::Nil => Ok(Value::Nil),
             Expr::Number(expr) => Ok(Value::Number(expr.value)),
-            Expr::String(expr) => Ok(Value::String(expr)),
-            Expr::Boolean(expr) => Ok(Value::Bool(expr)),
+            Expr::String(expr) => Ok(Value::String(expr.to_string())),
+            Expr::Boolean(expr) => Ok(Value::Bool(*expr)),
             Expr::Unary(expr) => self.unary(expr),
             Expr::Binary(expr) => self.binary(expr),
             Expr::Variable(expr) => self.variable(expr),
@@ -157,18 +169,18 @@ impl Interpreter {
         }
     }
 
-    fn assignment(&mut self, expression: AssignExpr) -> Result<Value, LoxError> {
-        let value = self.evaluate(*expression.value)?;
-        self.memory.assign(expression.name.lexeme, value)
+    fn assignment(&mut self, expression: &AssignExpr) -> Result<Value, LoxError> {
+        let value = self.evaluate(&expression.value)?;
+        self.memory.assign(expression.name.lexeme.clone(), value)
     }
 
-    fn group(&mut self, expression: GroupExpr) -> Result<Value, LoxError> {
-        self.evaluate(*expression.expr)
+    fn group(&mut self, expression: &GroupExpr) -> Result<Value, LoxError> {
+        self.evaluate(&expression.expr)
     }
 
-    fn binary(&mut self, expression: BinaryExpr) -> Result<Value, LoxError> {
-        let left = self.evaluate(*expression.left)?;
-        let right = self.evaluate(*expression.right)?;
+    fn binary(&mut self, expression: &BinaryExpr) -> Result<Value, LoxError> {
+        let left = self.evaluate(&expression.left)?;
+        let right = self.evaluate(&expression.right)?;
 
         match (left, right) {
             (Value::Number(l), Value::Number(r)) => match expression.oper.token_type {
