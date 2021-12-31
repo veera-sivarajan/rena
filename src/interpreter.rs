@@ -1,9 +1,11 @@
 use crate::environment::Environment;
 use crate::err::LoxError;
-use crate::expr::{AssignExpr, BinaryExpr, Expr, GroupExpr,
-                  UnaryExpr, VariableExpr};
-use crate::stmt::{ExpressionStmt, PrintStmt, Stmt, VarStmt, BlockStmt, IfStmt,
-                  WhileStmt};
+use crate::expr::{
+    AssignExpr, BinaryExpr, Expr, GroupExpr, UnaryExpr, VariableExpr
+};
+use crate::stmt::{
+    BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt
+};
 use crate::token::{Token, TokenType};
 
 use float_eq::{float_eq, float_ne};
@@ -102,7 +104,7 @@ impl Interpreter {
         }
     }
 
-    fn block(&mut self, block: &BlockStmt)-> Result<(), LoxError> {
+    fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
         self.memory.new_block();
 
         for stmt in &block.statements {
@@ -110,7 +112,7 @@ impl Interpreter {
                 Ok(()) => continue,
                 Err(error) => {
                     self.memory.exit_block();
-                    return Err(error)
+                    return Err(error);
                 }
             }
         }
@@ -126,9 +128,9 @@ impl Interpreter {
         match self.memory.fetch(name.lexeme) {
             None => error!("Undeclared variable."),
             Some(value) => match value {
-                Value::Nil => error!("Uninitialized variable."), 
+                Value::Nil => error!("Uninitialized variable."),
                 _ => Ok(value.clone()),
-            }
+            },
         }
     }
 

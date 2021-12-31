@@ -1,8 +1,11 @@
 use crate::err::LoxError;
-use crate::expr::{AssignExpr, BinaryExpr, Expr,
-                  GroupExpr, NumberExpr, UnaryExpr, VariableExpr};
-use crate::stmt::{BlockStmt, ExpressionStmt, PrintStmt, Stmt, VarStmt, LetStmt,
-                  IfStmt, WhileStmt};
+use crate::expr::{
+    AssignExpr, BinaryExpr, Expr, GroupExpr, NumberExpr, UnaryExpr, VariableExpr
+};
+use crate::stmt::{
+    BlockStmt, ExpressionStmt, IfStmt, LetStmt, PrintStmt, Stmt, VarStmt,
+    WhileStmt,
+};
 use crate::token::{Token, TokenType};
 
 pub struct Parser {
@@ -32,8 +35,7 @@ impl Parser {
         self.peek().token_type == TokenType::Eof
     }
 
-    fn consume(&mut self, token_type: TokenType,
-               message: &str) -> Result<Token, LoxError> {
+    fn consume(&mut self, token_type: TokenType, message: &str) -> Result<Token, LoxError> {
         if self.check(token_type) {
             Ok(self.advance())
         } else {
@@ -99,8 +101,7 @@ impl Parser {
             self.consume(TokenType::Semicolon, "Expect semicolon.")?;
             match kind {
                 TokenType::Var => Ok(Stmt::Var(VarStmt { name, init: None })),
-                TokenType::Let => 
-                    error!("Immutable variables should be defined."),
+                TokenType::Let => error!("Immutable variables should be defined."),
                 _ => unreachable!(),
             }
         }
@@ -130,7 +131,7 @@ impl Parser {
             body: Box::new(body),
         }))
     }
-        
+
     fn if_stmt(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
         let condition = self.expression()?;

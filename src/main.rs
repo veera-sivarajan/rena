@@ -8,9 +8,12 @@ mod scanner;
 mod stmt;
 mod token;
 
-use crate::interpreter::Interpreter;
 use crate::err::LoxError;
-use std::{fs, env, io::{stdout, Write}};
+use crate::interpreter::Interpreter;
+use std::{
+    env, fs,
+    io::{stdout, Write},
+};
 
 fn get_input() -> String {
     let mut input = String::new();
@@ -55,7 +58,7 @@ fn main() {
         }
     } else {
         match run_file(&args[1], &mut interpreter) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(some_error) => eprintln!("{}", some_error.to_string()),
         }
     }
