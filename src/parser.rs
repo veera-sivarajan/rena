@@ -87,11 +87,11 @@ impl Parser {
             match kind {
                 TokenType::Var => Ok(Stmt::Var(VarStmt {
                     name,
-                    init: Some(Box::new(init)),
+                    init: Some(init),
                 })),
                 TokenType::Let => Ok(Stmt::Let(LetStmt {
                     name,
-                    init: Some(Box::new(init)),
+                    init: Some(init),
                 })),
                 _ => unreachable!(),
             }
@@ -126,7 +126,7 @@ impl Parser {
         self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
         let body = self.statement()?;
         Ok(Stmt::While(WhileStmt {
-            condition: Box::new(condition),
+            condition,
             body: Box::new(body),
         }))
     }
@@ -141,7 +141,7 @@ impl Parser {
             else_branch = Some(Box::new(self.statement()?));
         }
         let if_node = IfStmt {
-            condition: Box::new(condition),
+            condition,
             then_branch: Box::new(then_branch),
             else_branch,
         };
@@ -160,17 +160,13 @@ impl Parser {
     fn print_stmt(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-        Ok(Stmt::Print(PrintStmt {
-            expr: Box::new(expr),
-        }))
+        Ok(Stmt::Print(PrintStmt { expr }))
     }
 
     fn expression_stmt(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-        Ok(Stmt::Expression(ExpressionStmt {
-            expr: Box::new(expr),
-        }))
+        Ok(Stmt::Expression(ExpressionStmt { expr }))
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> {

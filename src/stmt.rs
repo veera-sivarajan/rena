@@ -13,37 +13,37 @@ pub enum Stmt {
 
 #[derive(Clone)]
 pub struct IfStmt {
-    pub condition: Box<Expr>,
+    pub condition: Expr,
     pub then_branch: Box<Stmt>,
     pub else_branch: Option<Box<Stmt>>,
 }
 
 #[derive(Clone)]
 pub struct WhileStmt {
-    pub condition: Box<Expr>,
+    pub condition: Expr,
     pub body: Box<Stmt>,
 }
 
 #[derive(Clone)]
 pub struct VarStmt {
     pub name: Token,
-    pub init: Option<Box<Expr>>,
+    pub init: Option<Expr>,
 }
 
 #[derive(Clone)]
 pub struct LetStmt {
     pub name: Token,
-    pub init: Option<Box<Expr>>,
+    pub init: Option<Expr>,
 }
 
 #[derive(Clone)]
 pub struct PrintStmt {
-    pub expr: Box<Expr>,
+    pub expr: Expr,
 }
 
 #[derive(Clone)]
 pub struct ExpressionStmt {
-    pub expr: Box<Expr>,
+    pub expr: Expr,
 }
 
 #[derive(Clone)]
