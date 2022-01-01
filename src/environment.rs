@@ -23,8 +23,7 @@ impl Environment {
     }
 
     pub fn define(&mut self, name: String, value: Value) -> Result<(), LoxError> {
-        let last_ele = self.frame_list.len() - 1;
-        if let Some(frame) = self.frame_list.get_mut(last_ele) {
+        if let Some(frame) = self.frame_list.last_mut() {
             frame.insert(name, value);
             Ok(())
         } else {
@@ -41,7 +40,8 @@ impl Environment {
         None
     }
 
-    pub fn assign(&mut self, name: String, value: Value) -> Result<Value, LoxError> {
+    pub fn assign(&mut self,
+                  name: String, value: Value) -> Result<Value, LoxError> {
         for frame in self.frame_list.iter_mut().rev() {
             if frame.contains_key(&name) {
                 frame.insert(name, value.clone());
