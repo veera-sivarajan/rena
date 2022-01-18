@@ -42,7 +42,6 @@ impl Interpreter {
             Stmt::Expression(stmt) => self.expression(stmt),
             Stmt::Var(stmt) => self.var(stmt),
             Stmt::Block(stmt) => self.block(stmt),
-            Stmt::Let(_stmt) => Ok(()),
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
         }

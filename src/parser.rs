@@ -3,7 +3,7 @@ use crate::expr::{
     AssignExpr, BinaryExpr, Expr, GroupExpr, NumberExpr, UnaryExpr, VariableExpr
 };
 use crate::stmt::{
-    BlockStmt, ExpressionStmt, IfStmt, LetStmt, PrintStmt, Stmt, VarStmt,
+    BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt,
     WhileStmt,
 };
 use crate::token::{Token, TokenType};
@@ -74,36 +74,25 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Stmt, LoxError> {
-        if matches!(self, TokenType::Var, TokenType::Let) {
-            self.var_declaration(self.previous().token_type)
+        if matches!(self, TokenType::Var) {
+            self.var_declaration()
         } else {
             self.statement()
         }
     }
 
-    fn var_declaration(&mut self, kind: TokenType) -> Result<Stmt, LoxError> {
+    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
         let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
         if matches!(self, TokenType::Equal) {
             let init = self.expression()?;
             self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-            match kind {
-                TokenType::Var => Ok(Stmt::Var(VarStmt {
-                    name,
-                    init: Some(init),
-                })),
-                TokenType::Let => Ok(Stmt::Let(LetStmt {
-                    name,
-                    init: Some(init),
-                })),
-                _ => unreachable!(),
-            }
+            Ok(Stmt::Var(VarStmt {
+                name,
+                init: Some(init),
+            }))
         } else {
             self.consume(TokenType::Semicolon, "Expect semicolon.")?;
-            match kind {
-                TokenType::Var => Ok(Stmt::Var(VarStmt { name, init: None })),
-                TokenType::Let => error!("Immutable variables should be defined."),
-                _ => unreachable!(),
-            }
+            Ok(Stmt::Var(VarStmt { name, init: None }))
         }
     }
 
@@ -116,9 +105,55 @@ impl Parser {
             self.if_stmt()
         } else if matches!(self, TokenType::While) {
             self.while_stmt()
+        } else if matches!(self, TokenType::For) {
+            self.for_stmt()
         } else {
             self.expression_stmt()
         }
+    }
+
+    fn for_stmt(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'for'.")?;
+        let mut init;
+        if matches!(self, TokenType::Semicolon) {
+            init = None;
+        } else if matches!(self, TokenType::Var) {
+            init = Some(self.var_declaration()?);
+        } else {
+            init = Some(self.expression_stmt()?);
+        }
+
+        let mut condition = None;
+        if !matches!(self, TokenType::Semicolon) {
+            condition = Some(self.expression()?);
+        }
+        self.consume(TokenType::Semicolon, "Expect ';' after loop condition.");
+
+        let mut increment = None;
+        if !matches!(self, TokenType::RightParen) {
+            increment = Some(self.expression()?);
+        }
+        self.consume(TokenType::RightParen, "Expect ')' after for clauses.");
+
+        let mut body = self.statement()?;
+
+        if increment.is_some() {
+            let increment_stmt = Stmt::Expression(ExpressionStmt
+                                              { expr: increment.unwrap() });
+            body = Stmt::Block(BlockStmt {
+               statements: vec![body, increment_stmt] });
+        }
+
+        if condition.is_none() {
+            condition = Some(Expr::Boolean(true))
+        }
+
+        body = Stmt::While(WhileStmt{ condition: condition.unwrap(),
+                                      body: Box::new(body) });
+        if init.is_some() {
+            body = Stmt::Block(BlockStmt { statements: vec![init.unwrap(), body] });
+        }
+        Ok(body)
     }
 
     fn while_stmt(&mut self) -> Result<Stmt, LoxError> {

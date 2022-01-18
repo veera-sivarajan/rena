@@ -6,7 +6,6 @@ pub enum Stmt {
     Print(PrintStmt),
     Expression(ExpressionStmt),
     Block(BlockStmt),
-    Let(LetStmt),
     If(IfStmt),
     While(WhileStmt),
 }
@@ -26,12 +25,6 @@ pub struct WhileStmt {
 
 #[derive(Clone)]
 pub struct VarStmt {
-    pub name: Token,
-    pub init: Option<Expr>,
-}
-
-#[derive(Clone)]
-pub struct LetStmt {
     pub name: Token,
     pub init: Option<Expr>,
 }
