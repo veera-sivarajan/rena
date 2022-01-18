@@ -114,6 +114,7 @@ impl Parser {
 
     fn for_stmt(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'for'.")?;
+        
         let init;
         if matches!(self, TokenType::Semicolon) {
             init = None;
@@ -122,13 +123,15 @@ impl Parser {
         } else {
             init = Some(self.expression_stmt()?);
         }
+        
         let mut condition = None;
-        if !matches!(self, TokenType::Semicolon) {
+        if !self.check(TokenType::Semicolon) {
             condition = Some(self.expression()?);
         }
         self.consume(TokenType::Semicolon, "Expect ';' after loop condition.")?;
+        
         let mut increment = None;
-        if !matches!(self, TokenType::RightParen) {
+        if !self.check(TokenType::RightParen) {
             increment = Some(self.expression()?);
         }
         self.consume(TokenType::RightParen, "Expect ')' after for clauses.")?;
@@ -141,11 +144,8 @@ impl Parser {
                 statements: vec![body, increment_stmt]
             });
         }
-        if condition.is_none() {
-            condition = Some(Expr::Boolean(true))
-        }
         body = Stmt::While(WhileStmt{
-            condition: condition.unwrap(),
+            condition: condition.unwrap_or(Expr::Boolean(true)),
             body: Box::new(body)
         });
         if let Some(init_statement) = init {
