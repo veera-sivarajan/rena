@@ -114,7 +114,7 @@ impl Parser {
 
     fn for_stmt(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'for'.")?;
-        let mut init;
+        let init;
         if matches!(self, TokenType::Semicolon) {
             init = None;
         } else if matches!(self, TokenType::Var) {
@@ -122,36 +122,36 @@ impl Parser {
         } else {
             init = Some(self.expression_stmt()?);
         }
-
         let mut condition = None;
         if !matches!(self, TokenType::Semicolon) {
             condition = Some(self.expression()?);
         }
-        self.consume(TokenType::Semicolon, "Expect ';' after loop condition.");
-
+        self.consume(TokenType::Semicolon, "Expect ';' after loop condition.")?;
         let mut increment = None;
         if !matches!(self, TokenType::RightParen) {
             increment = Some(self.expression()?);
         }
-        self.consume(TokenType::RightParen, "Expect ')' after for clauses.");
-
+        self.consume(TokenType::RightParen, "Expect ')' after for clauses.")?;
         let mut body = self.statement()?;
-
-        if increment.is_some() {
-            let increment_stmt = Stmt::Expression(ExpressionStmt
-                                              { expr: increment.unwrap() });
+        if let Some(increment_expression) = increment {
+            let increment_stmt = Stmt::Expression(ExpressionStmt {
+                expr: increment_expression, 
+            });
             body = Stmt::Block(BlockStmt {
-               statements: vec![body, increment_stmt] });
+                statements: vec![body, increment_stmt]
+            });
         }
-
         if condition.is_none() {
             condition = Some(Expr::Boolean(true))
         }
-
-        body = Stmt::While(WhileStmt{ condition: condition.unwrap(),
-                                      body: Box::new(body) });
-        if init.is_some() {
-            body = Stmt::Block(BlockStmt { statements: vec![init.unwrap(), body] });
+        body = Stmt::While(WhileStmt{
+            condition: condition.unwrap(),
+            body: Box::new(body)
+        });
+        if let Some(init_statement) = init {
+            body = Stmt::Block(BlockStmt {
+                statements: vec![init_statement, body]
+            });
         }
         Ok(body)
     }
