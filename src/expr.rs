@@ -11,6 +11,7 @@ pub enum Expr {
     String(String),
     Assign(AssignExpr),
     Group(GroupExpr),
+    Call(CallExpr),
     Nil,
 }
 
@@ -25,6 +26,7 @@ impl fmt::Display for Expr {
             Expr::Variable(expr) => write!(f, "{}", expr),
             Expr::Assign(expr) => write!(f, "{}", expr),
             Expr::Group(expr) => write!(f, "{}", expr),
+            Expr::Call(expr) => write!(f, "{}", expr),
             Expr::Nil => write!(f, "nil"),
         }
     }
@@ -97,5 +99,22 @@ pub struct AssignExpr {
 impl fmt::Display for AssignExpr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Name: {}, Value: {}", self.name.lexeme, self.value)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct CallExpr {
+    pub callee: Box<Expr>,
+    pub paren: Token,
+    pub args: Vec<Expr>,
+}
+
+impl fmt::Display for CallExpr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Callee: {}, Paren: {}, Number of args: {}",
+               self.callee,
+               self.paren.lexeme,
+               self.args.len()
+        )
     }
 }

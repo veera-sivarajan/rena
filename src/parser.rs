@@ -1,6 +1,7 @@
 use crate::err::LoxError;
 use crate::expr::{
-    AssignExpr, BinaryExpr, Expr, GroupExpr, NumberExpr, UnaryExpr, VariableExpr
+    AssignExpr, BinaryExpr, Expr, GroupExpr, NumberExpr, UnaryExpr, VariableExpr,
+    CallExpr,
 };
 use crate::stmt::{
     BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt,
@@ -298,10 +299,40 @@ impl Parser {
                 right: Box::new(right),
             }))
         } else {
-            self.primary()
+            self.call()
         }
     }
 
+    fn call(&mut self) -> Result<Expr, LoxError> {
+        let mut expr = self.primary()?;
+        loop {
+            if matches!(self, TokenType::LeftParen) {
+                expr = self.finish_call(expr)?;
+            } else {
+                break;
+            }
+        }
+        Ok(expr)
+    }
+
+    fn finish_call(&mut self, callee: Expr) -> Result<Expr, LoxError> {
+        let mut args: Vec<Expr> = vec![];
+        if !self.check(TokenType::RightParen) {
+            args.push(self.expression()?);
+            while matches!(self, TokenType::Comma) {
+                args.push(self.expression()?);
+            }
+        }
+        let paren = self.consume(TokenType::RightParen,
+                                 "Expect ')' after arguments."
+        )?;
+        Ok(Expr::Call(CallExpr {
+            callee: Box::new(callee),
+            paren,
+            args,
+        }))
+    }
+            
     fn primary(&mut self) -> Result<Expr, LoxError> {
         if matches!(self, TokenType::Nil) {
             Ok(Expr::Nil)

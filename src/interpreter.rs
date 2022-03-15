@@ -167,6 +167,7 @@ impl Interpreter {
             Expr::Variable(expr) => self.variable(expr),
             Expr::Group(expr) => self.group(expr),
             Expr::Assign(expr) => self.assignment(expr),
+            Expr::Call(_expr) => error!("Call expression not implemented!"),
         }
     }
 

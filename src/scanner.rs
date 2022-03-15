@@ -86,6 +86,7 @@ impl Scanner {
             ';' => self.add_token(TokenType::Semicolon),
             '{' => self.add_token(TokenType::LeftBrace),
             '}' => self.add_token(TokenType::RightBrace),
+            ',' => self.add_token(TokenType::Comma),
             '!' => {
                 let new_type = if self.matches('=') {
                     TokenType::BangEqual

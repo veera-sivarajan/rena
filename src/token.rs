@@ -11,6 +11,7 @@ pub enum TokenType {
     Eof,
     LeftBrace,
     RightBrace,
+    Comma,
 
     Bang,
     BangEqual,
@@ -88,6 +89,7 @@ impl TokenType {
             TokenType::Else => String::from("Else"),
             TokenType::While => String::from("While"),
             TokenType::For => String::from("For"),
+            TokenType::Comma => String::from("Comma"),
         }
     }
 }
