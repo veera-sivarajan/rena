@@ -44,6 +44,7 @@ impl Interpreter {
             Stmt::Block(stmt) => self.block(stmt),
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
+            Stmt::Function(stmt) => error!("Fun declaration not implemented."),
         }
     }
 
@@ -171,7 +172,21 @@ impl Interpreter {
         }
     }
 
-    fn assignment(&mut self, expression: &AssignExpr) -> Result<Value, LoxError> {
+    // fn call(&mut self, expr: &CallExpr) -> Result<Value, LoxError> {
+    //     let fun_name = self.evaluate(&expr.callee)?;
+    //     let args: Vec<Value> = vec![];
+    //     for arg in &expr.args {
+    //         args.push(self.evaluate(arg)?);
+    //     }
+    //     // TODO
+    //     // if let fun_name != Value::Function {
+    //     //     error!("Can only call functions and classes.");
+    //     // } else {
+    // }
+
+    fn assignment(&mut self,
+                  expression: &AssignExpr
+    ) -> Result<Value, LoxError> {
         let value = self.evaluate(&expression.value)?;
         self.memory.assign(expression.name.lexeme.clone(), value)
     }

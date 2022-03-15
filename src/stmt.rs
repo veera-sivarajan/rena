@@ -8,6 +8,7 @@ pub enum Stmt {
     Block(BlockStmt),
     If(IfStmt),
     While(WhileStmt),
+    Function(FunStmt),
 }
 
 #[derive(Clone)]
@@ -42,4 +43,11 @@ pub struct ExpressionStmt {
 #[derive(Clone)]
 pub struct BlockStmt {
     pub statements: Vec<Stmt>,
+}
+
+#[derive(Clone)]
+pub struct FunStmt {
+    pub name: Token,
+    pub params: Vec<Token>,
+    pub body: Vec<Stmt>,
 }

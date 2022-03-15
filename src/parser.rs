@@ -5,7 +5,7 @@ use crate::expr::{
 };
 use crate::stmt::{
     BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt,
-    WhileStmt,
+    WhileStmt, FunStmt,
 };
 use crate::token::{Token, TokenType};
 
@@ -36,7 +36,10 @@ impl Parser {
         self.peek().token_type == TokenType::Eof
     }
 
-    fn consume(&mut self, token_type: TokenType, message: &str) -> Result<Token, LoxError> {
+    fn consume(&mut self,
+               token_type: TokenType,
+               message: &str
+    ) -> Result<Token, LoxError> {
         if self.check(token_type) {
             Ok(self.advance())
         } else {
@@ -77,9 +80,41 @@ impl Parser {
     fn declaration(&mut self) -> Result<Stmt, LoxError> {
         if matches!(self, TokenType::Var) {
             self.var_declaration()
+        } else if matches!(self, TokenType::Fun) {
+            self.function()
         } else {
             self.statement()
         }
+    }
+
+    fn function(&mut self) -> Result<Stmt, LoxError> {
+        let name = self.consume(TokenType::Identifier, "Expect function name.")?;
+        self.consume(TokenType::LeftParen, "Expect '(' after function name.")?;
+        // parse all parameters
+        let mut params: Vec<Token> = vec![];
+        if !self.check(TokenType::RightParen) {
+            params.push(self.consume(TokenType::Identifier,
+                                     "Expect parameter name."
+            )?);
+            while matches!(self, TokenType::Comma) {
+                if params.len() < 255 {
+                    params.push(self.consume(TokenType::Identifier,
+                                             "Expect parameter name."
+                    )?);
+                } else {
+                    return error!("Can't have more than 255 parameters.");
+                }
+            }
+        }
+        self.consume(TokenType::RightParen, "Expect ')' after parameters.")?;
+        
+        self.consume(TokenType::LeftBrace, "Expect '{' before function body")?;
+        let body = self.block_stmt()?;
+        Ok(Stmt::Function(FunStmt {
+            name,
+            params,
+            body,
+        }))
     }
 
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
@@ -101,7 +136,8 @@ impl Parser {
         if matches!(self, TokenType::Print) {
             self.print_stmt()
         } else if matches!(self, TokenType::LeftBrace) {
-            self.block_stmt()
+            let statements = self.block_stmt()?;
+            Ok(Stmt::Block(BlockStmt { statements }))
         } else if matches!(self, TokenType::If) {
             self.if_stmt()
         } else if matches!(self, TokenType::While) {
@@ -185,13 +221,13 @@ impl Parser {
         Ok(Stmt::If(if_node))
     }
 
-    fn block_stmt(&mut self) -> Result<Stmt, LoxError> {
+    fn block_stmt(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements = Vec::new();
         while !self.check(TokenType::RightBrace) && !self.is_end() {
             statements.push(self.declaration()?);
         }
         self.consume(TokenType::RightBrace, "Expect '}' after block.")?;
-        Ok(Stmt::Block(BlockStmt { statements }))
+        Ok(statements)
     }
 
     fn print_stmt(&mut self) -> Result<Stmt, LoxError> {
@@ -318,8 +354,11 @@ impl Parser {
     fn finish_call(&mut self, callee: Expr) -> Result<Expr, LoxError> {
         let mut args: Vec<Expr> = vec![];
         if !self.check(TokenType::RightParen) {
-            args.push(self.expression()?);
+            args.push(self.expression()?); // parse first argument
             while matches!(self, TokenType::Comma) {
+                if args.len() >= 255 {
+                    return error!("Can't have more than 255 arguments.");
+                };
                 args.push(self.expression()?);
             }
         }
