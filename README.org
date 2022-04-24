@@ -1,5 +1,4 @@
 #+TITLE: rena
 Learning Rust by rewriting Lox interpreter. 
 
-This project is in its early stages of development; it can evaluate unary and binary expressions. It will be incrementally developed to a full-fledged Lox interpreter with some additional features. 
-
+To comply with the rule of borrow checker, I use a ~Vec~ instead of a reference variable to chain the different scopes. You can learn more about it in this blog post: [[https://veera.app/rena's_memory_model.html][Rena's Memory Model]].
