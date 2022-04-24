@@ -37,6 +37,7 @@ impl Callable for Function {
                                args_iter.next().unwrap().clone()).unwrap();
         }
         intp.execute_function_block(&self.declaration)?;
+        intp.memory.exit_block();
         Ok(Value::Nil)
     }
 }
