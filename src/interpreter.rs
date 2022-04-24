@@ -4,9 +4,11 @@ use crate::expr::{
     AssignExpr, BinaryExpr, Expr, GroupExpr, UnaryExpr, VariableExpr
 };
 use crate::stmt::{
-    BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt
+    BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt,
+    FunStmt,
 };
 use crate::token::{Token, TokenType};
+// use crate::functions::Function;
 
 use float_eq::{float_eq, float_ne};
 
@@ -16,10 +18,11 @@ pub enum Value {
     Number(f64),
     Bool(bool),
     String(String),
+    // Function(Function),
 }
 
 pub struct Interpreter {
-    memory: Environment,
+    pub memory: Environment,
 }
 
 impl Interpreter {
@@ -27,6 +30,12 @@ impl Interpreter {
         Interpreter {
             memory: Environment::new(),
         }
+    }
+
+    pub fn switch_environment(&mut self, new_env: Environment) -> Environment {
+        let old = self.memory.clone();
+        self.memory = new_env;
+        old
     }
 
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
@@ -44,9 +53,15 @@ impl Interpreter {
             Stmt::Block(stmt) => self.block(stmt),
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
-            Stmt::Function(stmt) => error!("Fun declaration not implemented."),
+            // Stmt::Function(stmt) => self.fun_decl(stmt), 
         }
     }
+
+    // fn fun_decl(&mut self, statement: &FunStmt) -> Result<(), LoxError> {
+    //     let func = Function::new(statement.clone());
+    //     self.memory.define(statement.name.lexeme.clone(), Value::Function(func));
+    //     Ok(())
+    // }
 
     fn is_truthy(&self, object: Value) -> bool {
         match object {
@@ -87,6 +102,7 @@ impl Interpreter {
             Value::Bool(tof) => format!("{}", tof),
             Value::String(value) => value,
             Value::Nil => "nil".to_string(),
+            // Value::Function(fun) => String::from("Function"),
         }
     }
 
@@ -104,9 +120,14 @@ impl Interpreter {
         }
     }
 
-    fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
+    pub fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
         self.memory.new_block();
+        let result = self.execute_block(block);
+        self.memory.exit_block();
+        result
+    }
 
+    fn execute_block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
         for stmt in &block.statements {
             match self.execute(stmt) {
                 Ok(()) => continue,
@@ -116,7 +137,6 @@ impl Interpreter {
                 }
             }
         }
-        self.memory.exit_block();
         Ok(())
     }
 

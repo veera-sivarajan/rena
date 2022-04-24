@@ -7,6 +7,7 @@ mod parser;
 mod scanner;
 mod stmt;
 mod token;
+// mod functions;
 
 use crate::err::LoxError;
 use crate::interpreter::Interpreter;

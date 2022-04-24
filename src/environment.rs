@@ -14,6 +14,14 @@ impl Environment {
         }
     }
 
+    pub fn with_enclosing(enclosing: Environment) -> Environment {
+        let mut new_env = enclosing.frame_list.clone();
+        new_env.push(HashMap::new());
+        Environment {
+            frame_list: new_env, 
+        }
+    }
+
     pub fn new_block(&mut self) {
         self.frame_list.push(HashMap::new());
     }
@@ -41,7 +49,10 @@ impl Environment {
     }
 
     pub fn assign(&mut self,
-                  name: String, value: Value) -> Result<Value, LoxError> {
+                  name: String,
+                  value: Value
+    ) -> Result<Value, LoxError> {
+        // start searching from the innermost scope
         for frame in self.frame_list.iter_mut().rev() {
             if frame.contains_key(&name) {
                 frame.insert(name, value.clone());

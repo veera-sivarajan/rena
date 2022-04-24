@@ -81,41 +81,42 @@ impl Parser {
         if matches!(self, TokenType::Var) {
             self.var_declaration()
         } else if matches!(self, TokenType::Fun) {
-            self.function()
+            // self.function()
+            todo!();
         } else {
             self.statement()
         }
     }
 
-    fn function(&mut self) -> Result<Stmt, LoxError> {
-        let name = self.consume(TokenType::Identifier, "Expect function name.")?;
-        self.consume(TokenType::LeftParen, "Expect '(' after function name.")?;
-        // parse all parameters
-        let mut params: Vec<Token> = vec![];
-        if !self.check(TokenType::RightParen) {
-            params.push(self.consume(TokenType::Identifier,
-                                     "Expect parameter name."
-            )?);
-            while matches!(self, TokenType::Comma) {
-                if params.len() < 255 {
-                    params.push(self.consume(TokenType::Identifier,
-                                             "Expect parameter name."
-                    )?);
-                } else {
-                    return error!("Can't have more than 255 parameters.");
-                }
-            }
-        }
-        self.consume(TokenType::RightParen, "Expect ')' after parameters.")?;
+    // fn function(&mut self) -> Result<Stmt, LoxError> {
+    //     let name = self.consume(TokenType::Identifier, "Expect function name.")?;
+    //     self.consume(TokenType::LeftParen, "Expect '(' after function name.")?;
+    //     // parse all parameters
+    //     let mut params: Vec<Token> = vec![];
+    //     if !self.check(TokenType::RightParen) {
+    //         params.push(self.consume(TokenType::Identifier,
+    //                                  "Expect parameter name."
+    //         )?);
+    //         while matches!(self, TokenType::Comma) {
+    //             if params.len() < 255 {
+    //                 params.push(self.consume(TokenType::Identifier,
+    //                                          "Expect parameter name."
+    //                 )?);
+    //             } else {
+    //                 return error!("Can't have more than 255 parameters.");
+    //             }
+    //         }
+    //     }
+    //     self.consume(TokenType::RightParen, "Expect ')' after parameters.")?;
         
-        self.consume(TokenType::LeftBrace, "Expect '{' before function body")?;
-        let body = self.block_stmt()?;
-        Ok(Stmt::Function(FunStmt {
-            name,
-            params,
-            body,
-        }))
-    }
+    //     self.consume(TokenType::LeftBrace, "Expect '{' before function body")?;
+    //     let body = self.block_stmt()?;
+    //     Ok(Stmt::Function(FunStmt {
+    //         name,
+    //         params,
+    //         body,
+    //     }))
+    // }
 
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
         let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
