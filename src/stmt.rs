@@ -8,7 +8,7 @@ pub enum Stmt {
     Block(BlockStmt),
     If(IfStmt),
     While(WhileStmt),
-    // Function(FunStmt),
+    Function(FunStmt),
 }
 
 #[derive(Clone)]

@@ -1,14 +1,14 @@
 use crate::environment::Environment;
 use crate::err::LoxError;
 use crate::expr::{
-    AssignExpr, BinaryExpr, Expr, GroupExpr, UnaryExpr, VariableExpr
+    AssignExpr, BinaryExpr, Expr, GroupExpr, UnaryExpr, VariableExpr, CallExpr,
 };
 use crate::stmt::{
     BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt,
     FunStmt,
 };
 use crate::token::{Token, TokenType};
-// use crate::functions::Function;
+use crate::functions::{Function, Callable};
 
 use float_eq::{float_eq, float_ne};
 
@@ -18,7 +18,7 @@ pub enum Value {
     Number(f64),
     Bool(bool),
     String(String),
-    // Function(Function),
+    Function(Function),
 }
 
 pub struct Interpreter {
@@ -30,12 +30,6 @@ impl Interpreter {
         Interpreter {
             memory: Environment::new(),
         }
-    }
-
-    pub fn switch_environment(&mut self, new_env: Environment) -> Environment {
-        let old = self.memory.clone();
-        self.memory = new_env;
-        old
     }
 
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
@@ -53,15 +47,15 @@ impl Interpreter {
             Stmt::Block(stmt) => self.block(stmt),
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
-            // Stmt::Function(stmt) => self.fun_decl(stmt), 
+            Stmt::Function(stmt) => self.fun_decl(stmt), 
         }
     }
 
-    // fn fun_decl(&mut self, statement: &FunStmt) -> Result<(), LoxError> {
-    //     let func = Function::new(statement.clone());
-    //     self.memory.define(statement.name.lexeme.clone(), Value::Function(func));
-    //     Ok(())
-    // }
+    fn fun_decl(&mut self, statement: &FunStmt) -> Result<(), LoxError> {
+        let func = Function::new(statement.clone());
+        self.memory.define(statement.name.lexeme.clone(), Value::Function(func))?;
+        Ok(())
+    }
 
     fn is_truthy(&self, object: Value) -> bool {
         match object {
@@ -102,7 +96,7 @@ impl Interpreter {
             Value::Bool(tof) => format!("{}", tof),
             Value::String(value) => value,
             Value::Nil => "nil".to_string(),
-            // Value::Function(fun) => String::from("Function"),
+            Value::Function(fun) => format!("function {}", fun.declaration.name.lexeme), 
         }
     }
 
@@ -120,15 +114,30 @@ impl Interpreter {
         }
     }
 
-    pub fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
+    fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
         self.memory.new_block();
         let result = self.execute_block(block);
         self.memory.exit_block();
         result
     }
 
-    fn execute_block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
+    pub fn execute_block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
         for stmt in &block.statements {
+            match self.execute(stmt) {
+                Ok(()) => continue,
+                Err(error) => {
+                    self.memory.exit_block();
+                    return Err(error);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub fn execute_function_block(&mut self,
+                                  fun_block: &FunStmt
+    ) -> Result<(), LoxError> {
+        for stmt in &fun_block.body {
             match self.execute(stmt) {
                 Ok(()) => continue,
                 Err(error) => {
@@ -188,21 +197,23 @@ impl Interpreter {
             Expr::Variable(expr) => self.variable(expr),
             Expr::Group(expr) => self.group(expr),
             Expr::Assign(expr) => self.assignment(expr),
-            Expr::Call(_expr) => error!("Call expression not implemented!"),
+            Expr::Call(expr) => self.call(expr),
         }
     }
 
-    // fn call(&mut self, expr: &CallExpr) -> Result<Value, LoxError> {
-    //     let fun_name = self.evaluate(&expr.callee)?;
-    //     let args: Vec<Value> = vec![];
-    //     for arg in &expr.args {
-    //         args.push(self.evaluate(arg)?);
-    //     }
-    //     // TODO
-    //     // if let fun_name != Value::Function {
-    //     //     error!("Can only call functions and classes.");
-    //     // } else {
-    // }
+    fn call(&mut self, expr: &CallExpr) -> Result<Value, LoxError> {
+        let fun_name = self.evaluate(&expr.callee)?;
+        let mut args: Vec<Value> = vec![];
+        for arg in &expr.args {
+            args.push(self.evaluate(arg)?);
+        }
+        if let Value::Function(func) = fun_name {
+            func.call(self, args)
+        } else {
+            error!("Can only call functions and classes.")
+        }
+
+    }
 
     fn assignment(&mut self,
                   expression: &AssignExpr

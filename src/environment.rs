@@ -14,14 +14,6 @@ impl Environment {
         }
     }
 
-    pub fn with_enclosing(enclosing: Environment) -> Environment {
-        let mut new_env = enclosing.frame_list.clone();
-        new_env.push(HashMap::new());
-        Environment {
-            frame_list: new_env, 
-        }
-    }
-
     pub fn new_block(&mut self) {
         self.frame_list.push(HashMap::new());
     }
