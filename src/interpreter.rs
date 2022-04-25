@@ -32,7 +32,9 @@ impl Interpreter {
         }
     }
 
-    pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
+    pub fn interpret(&mut self, statements: &[Stmt]) -> Result<(), LoxError> {
+        // try_for_each returns Ok(()) if none of the items in the iterator
+        // return an error on applying the closure
         statements
             .iter()
             .try_for_each(|stmt| { self.execute(stmt) })
@@ -52,8 +54,7 @@ impl Interpreter {
 
     fn fun_decl(&mut self, statement: &FunStmt) -> Result<(), LoxError> {
         let func = Function::new(statement.clone());
-        self.memory.define(statement.name.lexeme.clone(), Value::Function(func))?;
-        Ok(())
+        self.memory.define(statement.name.lexeme.clone(), Value::Function(func))
     }
 
     fn is_truthy(&self, object: Value) -> bool {
@@ -76,11 +77,12 @@ impl Interpreter {
     fn execute_if(&mut self, statement: &IfStmt) -> Result<(), LoxError> {
         let value = self.evaluate(&statement.condition)?;
         if self.is_truthy(value) {
-            self.execute(&statement.then_branch)?
+            self.execute(&statement.then_branch)
         } else if let Some(else_branch) = &statement.else_branch {
-            self.execute(else_branch)?;
+            self.execute(else_branch)
+        } else {
+            Ok(())
         }
-        Ok(())
     }
 
     fn print(&mut self, stmt: &PrintStmt) -> Result<(), LoxError> {
@@ -115,17 +117,9 @@ impl Interpreter {
 
     fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
         self.memory.new_block();
-        let result = self.execute_stmts(&block.statements);
+        let result = self.interpret(&block.statements);
         self.memory.exit_block();
         result
-    }
-
-    pub fn execute_stmts(&mut self, stmts: &[Stmt]) -> Result<(), LoxError> {
-        // try_for_each returns Ok(()) if none of the items in the iterator
-        // return an error on applying the closure
-        stmts
-            .iter()
-            .try_for_each(|stmt| { self.execute(stmt) })
     }
 
     fn variable(&self, expression: &VariableExpr) -> Result<Value, LoxError> {

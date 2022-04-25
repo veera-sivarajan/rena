@@ -30,8 +30,7 @@ fn get_input() -> String {
 fn run(src: String, intp: &mut Interpreter) -> Result<(), LoxError> {
     let tokens = scanner::Scanner::new(src).scan_tokens()?;
     let ast = parser::Parser::new(tokens).parse()?;
-    intp.interpret(ast)?;
-    Ok(())
+    intp.interpret(&ast)
 }
 
 fn run_file(path: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
