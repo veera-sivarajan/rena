@@ -51,7 +51,7 @@ fn main() {
             } else if !input.is_empty() {
                 match run(input, &mut interpreter) {
                     Ok(()) => continue,
-                    Err(some_error) => eprintln!("{}", some_error.to_string()),
+                    Err(some_error) => eprintln!("{}", some_error),
                 }
             } else {
                 continue;
@@ -60,7 +60,7 @@ fn main() {
     } else {
         match run_file(&args[1], &mut interpreter) {
             Ok(()) => {}
-            Err(some_error) => eprintln!("{}", some_error.to_string()),
+            Err(some_error) => eprintln!("{}", some_error),
         }
     }
 }
