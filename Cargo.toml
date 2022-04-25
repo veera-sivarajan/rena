@@ -1,5 +1,5 @@
 [package]
-name = "tiny-calc"
+name = "rena"
 version = "0.1.0"
 authors = ["Veera <sveera.2001@gmail.com>"]
 edition = "2018"
