@@ -33,10 +33,10 @@ impl Interpreter {
     }
 
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
-        for statement in statements {
-            self.execute(&statement)?
-        }
-        Ok(())
+        statements
+            .iter()
+            .map(|stmt| { self.execute(stmt) })
+            .collect::<Result<(), LoxError>>()
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
@@ -122,31 +122,31 @@ impl Interpreter {
     }
 
     pub fn execute_block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
-        for stmt in &block.statements {
-            match self.execute(stmt) {
-                Ok(()) => continue,
-                Err(error) => {
+        block.statements
+            .iter()
+            .map(|stmt| {
+                if let Err(error) = self.execute(stmt) {
                     self.memory.exit_block();
-                    return Err(error);
-                }
-            }
-        }
-        Ok(())
+                    Err(error)
+                } else {
+                    Ok(())
+                }})
+            .collect::<Result<(), LoxError>>()
     }
 
     pub fn execute_function_block(&mut self,
                                   fun_block: &FunStmt
     ) -> Result<(), LoxError> {
-        for stmt in &fun_block.body {
-            match self.execute(stmt) {
-                Ok(()) => continue,
-                Err(error) => {
+        fun_block.body
+            .iter()
+            .map(|stmt| {
+                if let Err(error) = self.execute(stmt) {
                     self.memory.exit_block();
-                    return Err(error);
-                }
-            }
-        }
-        Ok(())
+                    Err(error)
+                } else {
+                    Ok(())
+                }})
+            .collect::<Result<(), LoxError>>()
     }
 
     fn variable(&self, expression: &VariableExpr) -> Result<Value, LoxError> {
@@ -203,10 +203,10 @@ impl Interpreter {
 
     fn call(&mut self, expr: &CallExpr) -> Result<Value, LoxError> {
         let fun_name = self.evaluate(&expr.callee)?;
-        let mut args: Vec<Value> = vec![];
-        for arg in &expr.args {
-            args.push(self.evaluate(arg)?);
-        }
+        let args = expr.args
+            .iter() // iterate over the values by reference
+            .map(|arg| { self.evaluate(arg) })
+            .collect::<Result<Vec<_>, _>>()?;
         if let Value::Function(func) = fun_name {
             func.call(self, args)
         } else {
@@ -252,6 +252,7 @@ impl Interpreter {
             (Value::String(l), Value::String(r)) => match expression.oper.token_type {
                 TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
                 TokenType::BangEqual => Ok(Value::Bool(l.ne(&r))),
+                TokenType::Plus => Ok(Value::String(format!("{}{}", l, r))),
                 _ => error!("Unknown operation for strings."),
             },
             _ => match expression.oper.token_type {
