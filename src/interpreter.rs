@@ -35,8 +35,7 @@ impl Interpreter {
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         statements
             .iter()
-            .map(|stmt| { self.execute(stmt) })
-            .collect::<Result<(), LoxError>>()
+            .try_for_each(|stmt| { self.execute(stmt) })
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
@@ -116,37 +115,17 @@ impl Interpreter {
 
     fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
         self.memory.new_block();
-        let result = self.execute_block(block);
+        let result = self.execute_stmts(&block.statements);
         self.memory.exit_block();
         result
     }
 
-    pub fn execute_block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
-        block.statements
+    pub fn execute_stmts(&mut self, stmts: &[Stmt]) -> Result<(), LoxError> {
+        // try_for_each returns Ok(()) if none of the items in the iterator
+        // return an error on applying the closure
+        stmts
             .iter()
-            .map(|stmt| {
-                if let Err(error) = self.execute(stmt) {
-                    self.memory.exit_block();
-                    Err(error)
-                } else {
-                    Ok(())
-                }})
-            .collect::<Result<(), LoxError>>()
-    }
-
-    pub fn execute_function_block(&mut self,
-                                  fun_block: &FunStmt
-    ) -> Result<(), LoxError> {
-        fun_block.body
-            .iter()
-            .map(|stmt| {
-                if let Err(error) = self.execute(stmt) {
-                    self.memory.exit_block();
-                    Err(error)
-                } else {
-                    Ok(())
-                }})
-            .collect::<Result<(), LoxError>>()
+            .try_for_each(|stmt| { self.execute(stmt) })
     }
 
     fn variable(&self, expression: &VariableExpr) -> Result<Value, LoxError> {

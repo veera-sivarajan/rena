@@ -36,7 +36,7 @@ impl Callable for Function {
             intp.memory.define(param.lexeme.clone(),
                                args_iter.next().unwrap().clone()).unwrap();
         }
-        intp.execute_function_block(&self.declaration)?;
+        let _result = intp.execute_stmts(&self.declaration.body);
         intp.memory.exit_block();
         Ok(Value::Nil)
     }
