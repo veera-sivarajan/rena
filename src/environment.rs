@@ -32,25 +32,32 @@ impl Environment {
     }
 
     pub fn fetch(&self, name: String) -> Option<&Value> {
-        for frame in self.frame_list.iter().rev() {
-            if frame.contains_key(&name) {
-                return frame.get(&name);
-            }
+        let frame = self.frame_list
+            .iter()
+            .rev()
+            .find(|f| f.contains_key(&name));
+        
+        if let Some(f) = frame {
+            f.get(&name)
+        } else {
+            None
         }
-        None
     }
 
     pub fn assign(&mut self,
                   name: String,
                   value: Value
     ) -> Result<Value, LoxError> {
-        // start searching from the innermost scope
-        for frame in self.frame_list.iter_mut().rev() {
-            if frame.contains_key(&name) {
-                frame.insert(name, value.clone());
-                return Ok(value);
-            }
+        let frame = self.frame_list
+            .iter_mut()
+            .rev()
+            .find(|f| f.contains_key(&name));
+
+        if let Some(f) = frame {
+            f.insert(name, value.clone());
+            Ok(value)
+        } else {
+            error!("Undefined variable.")
         }
-        error!("Undefined variable.")
     }
 }

@@ -37,7 +37,7 @@ impl Interpreter {
         // return an error on applying the closure
         statements
             .iter()
-            .try_for_each(|stmt| { self.execute(stmt) })
+            .try_for_each(|stmt| self.execute(stmt))
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
@@ -178,7 +178,7 @@ impl Interpreter {
         let fun_name = self.evaluate(&expr.callee)?;
         let args = expr.args
             .iter() // iterate over the values by reference
-            .map(|arg| { self.evaluate(arg) })
+            .map(|arg| self.evaluate(arg))
             .collect::<Result<Vec<_>, _>>()?;
         if let Value::Function(func) = fun_name {
             func.call(self, args)
