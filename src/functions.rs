@@ -30,18 +30,24 @@ impl Callable for Function {
             intp: &mut Interpreter,
             args: Vec<Value>
     ) -> Result<Value, LoxError> {
-        intp.memory.new_block();
-        // NOTE: Can use .zip() to iterate through
-        // two different collections
         if args.len() != self.arity() {
             error!("Number of arguments does not match number of parameters.")
         } else {
-            let mut args_iter = args.iter();
-            for param in &self.declaration.params {
-                intp.memory.define(param.lexeme.clone(),
-                                   args_iter.next().unwrap().clone()).unwrap();
-            }
-            let _ = intp.interpret(&self.declaration.body);
+            // create a new frame
+            intp.memory.new_block();
+
+            // bind all argument values to function parameters in the new frame
+            self.declaration.params 
+                .iter()
+                .zip(args.iter())
+                .try_for_each(|(name, value)| {
+                    intp.memory.define(name.lexeme.clone(), value.clone())
+                })?;
+
+            // interpret function statements in the context of newly created frame
+            intp.interpret(&self.declaration.body)?; 
+
+            // after executing all function statements, remove the new frame
             intp.memory.exit_block();
             Ok(Value::Nil)
         }
