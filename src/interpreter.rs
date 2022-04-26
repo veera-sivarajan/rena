@@ -97,12 +97,13 @@ impl Interpreter {
             Value::Bool(tof) => format!("{}", tof),
             Value::String(value) => value,
             Value::Nil => "nil".to_string(),
-            Value::Function(fun) => format!("function {}", fun.declaration.name.lexeme), 
+            Value::Function(fun) => format!("<function {}>",
+                                            fun.declaration.name.lexeme), 
         }
     }
 
     fn expression(&mut self, stmt: &ExpressionStmt) -> Result<(), LoxError> {
-        let _value = self.evaluate(&stmt.expr)?;
+        let _ = self.evaluate(&stmt.expr)?;
         Ok(())
     }
 

@@ -31,14 +31,20 @@ impl Callable for Function {
             args: Vec<Value>
     ) -> Result<Value, LoxError> {
         intp.memory.new_block();
-        let mut args_iter = args.iter();
-        for param in &self.declaration.params {
-            intp.memory.define(param.lexeme.clone(),
-                               args_iter.next().unwrap().clone()).unwrap();
+        // NOTE: Can use .zip() to iterate through
+        // two different collections
+        if args.len() != self.arity() {
+            error!("Number of arguments does not match number of parameters.")
+        } else {
+            let mut args_iter = args.iter();
+            for param in &self.declaration.params {
+                intp.memory.define(param.lexeme.clone(),
+                                   args_iter.next().unwrap().clone()).unwrap();
+            }
+            let _ = intp.interpret(&self.declaration.body);
+            intp.memory.exit_block();
+            Ok(Value::Nil)
         }
-        let _result = intp.interpret(&self.declaration.body);
-        intp.memory.exit_block();
-        Ok(Value::Nil)
     }
 }
             
