@@ -54,7 +54,7 @@ impl Interpreter {
 
     fn fun_decl(&mut self, statement: &FunStmt) -> Result<(), LoxError> {
         let func = Function::new(statement.clone());
-        self.memory.define(statement.name.lexeme.clone(), Value::Function(func))
+        self.memory.define(&statement.name.lexeme, Value::Function(func))
     }
 
     fn is_truthy(&self, object: Value) -> bool {
@@ -110,9 +110,9 @@ impl Interpreter {
     fn var(&mut self, decl: &VarStmt) -> Result<(), LoxError> {
         if let Some(init) = &decl.init {
             let value = self.evaluate(init)?;
-            self.memory.define(decl.name.lexeme.clone(), value)
+            self.memory.define(&decl.name.lexeme, value)
         } else {
-            self.memory.define(decl.name.lexeme.clone(), Value::Nil)
+            self.memory.define(&decl.name.lexeme, Value::Nil)
         }
     }
 
@@ -128,7 +128,7 @@ impl Interpreter {
     }
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
-        match self.memory.fetch(name.lexeme) {
+        match self.memory.fetch(&name.lexeme) {
             None => error!("Undeclared variable."),
             Some(value) => match value {
                 Value::Nil => error!("Uninitialized variable."),
@@ -193,7 +193,7 @@ impl Interpreter {
                   expression: &AssignExpr
     ) -> Result<Value, LoxError> {
         let value = self.evaluate(&expression.value)?;
-        self.memory.assign(expression.name.lexeme.clone(), value)
+        self.memory.assign(&expression.name.lexeme, value)
     }
 
     fn group(&mut self, expression: &GroupExpr) -> Result<Value, LoxError> {

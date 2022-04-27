@@ -31,7 +31,8 @@ impl Callable for Function {
             args: Vec<Value>
     ) -> Result<Value, LoxError> {
         if args.len() != self.arity() {
-            error!("Number of arguments does not match number of parameters.")
+            error!(format!("Expected {} arguments but got {}.",
+                           self.arity(), args.len()))
         } else {
             // create a new frame
             intp.memory.new_block();
@@ -39,9 +40,9 @@ impl Callable for Function {
             // bind all argument values to function parameters in the new frame
             self.declaration.params 
                 .iter()
-                .zip(args.iter())
+                .zip(args.iter()) // combines two iters into one tuple
                 .try_for_each(|(name, value)| {
-                    intp.memory.define(name.lexeme.clone(), value.clone())
+                    intp.memory.define(&name.lexeme, value.clone())
                 })?;
 
             // interpret function statements in the context of newly created frame

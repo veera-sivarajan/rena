@@ -22,39 +22,39 @@ impl Environment {
         self.frame_list.pop();
     }
 
-    pub fn define(&mut self, name: String, value: Value) -> Result<(), LoxError> {
+    pub fn define(&mut self, name: &str, value: Value) -> Result<(), LoxError> {
         if let Some(frame) = self.frame_list.last_mut() {
-            frame.insert(name, value);
+            frame.insert(name.to_owned(), value);
             Ok(())
         } else {
             error!("Frame not available.")
         }
     }
 
-    pub fn fetch(&self, name: String) -> Option<&Value> {
+    pub fn fetch(&self, name: &str) -> Option<&Value> {
         let frame = self.frame_list
             .iter()
             .rev()
-            .find(|f| f.contains_key(&name));
+            .find(|f| f.contains_key(name));
         
         if let Some(f) = frame {
-            f.get(&name)
+            f.get(name)
         } else {
             None
         }
     }
 
     pub fn assign(&mut self,
-                  name: String,
+                  name: &str,
                   value: Value
     ) -> Result<Value, LoxError> {
         let frame = self.frame_list
             .iter_mut()
             .rev()
-            .find(|f| f.contains_key(&name));
+            .find(|f| f.contains_key(name));
 
         if let Some(f) = frame {
-            f.insert(name, value.clone());
+            f.insert(name.to_owned(), value.clone());
             Ok(value)
         } else {
             error!("Undefined variable.")
