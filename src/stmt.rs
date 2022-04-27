@@ -1,6 +1,6 @@
 use crate::expr::Expr;
 use crate::token::Token;
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Stmt {
     Var(VarStmt),
     Print(PrintStmt),
@@ -12,48 +12,48 @@ pub enum Stmt {
     Return(ReturnStmt),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct IfStmt {
     pub condition: Expr,
     pub then_branch: Box<Stmt>,
     pub else_branch: Option<Box<Stmt>>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct WhileStmt {
     pub condition: Expr,
     pub body: Box<Stmt>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct VarStmt {
     pub name: Token,
     pub init: Option<Expr>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PrintStmt {
     pub expr: Expr,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExpressionStmt {
     pub expr: Expr,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BlockStmt {
     pub statements: Vec<Stmt>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FunStmt {
     pub name: Token,
     pub params: Vec<Token>,
     pub body: Vec<Stmt>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ReturnStmt {
     pub keyword: Token,
     pub value: Option<Expr>,

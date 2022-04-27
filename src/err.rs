@@ -1,31 +1,26 @@
+use crate::interpreter::Value;
 use std::error::Error;
 use std::fmt;
 
-#[derive(Debug)]
-pub struct LoxError {
-    err: String,
+macro_rules! error {
+    ( $message:expr) => {
+        Err(LoxError::Error(String::from($message)))
+    };
 }
 
-impl Error for LoxError {
-    fn description(&self) -> &str {
-        &self.err
-    }
+#[derive(Debug)]
+pub enum LoxError {
+    Return(Value),
+    Error(String),
 }
+
+impl Error for LoxError {}
 
 impl fmt::Display for LoxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Error: {}", &self.err)
+        match self {
+            LoxError::Error(msg) => write!(f, "Error: {}", msg),
+            LoxError::Return(_) => write!(f, "Unreachable code!"),
+        }
     }
-}
-
-impl LoxError {
-    pub fn new(err: String) -> LoxError {
-        LoxError { err }
-    }
-}
-
-macro_rules! error {
-    ( $message:expr) => {
-        Err(LoxError::new(String::from($message)))
-    };
 }

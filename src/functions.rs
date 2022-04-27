@@ -10,7 +10,7 @@ pub trait Callable {
     ) -> Result<Value, LoxError>;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Function {
     pub declaration: FunStmt
 }
@@ -46,11 +46,15 @@ impl Callable for Function {
                 })?;
 
             // interpret function statements in the context of newly created frame
-            intp.interpret(&self.declaration.body)?; 
-
-            // after executing all function statements, remove the new frame
+            let result = intp.interpret(&self.declaration.body);
+            // remove new frame after interpreting body of function 
             intp.memory.exit_block();
-            Ok(Value::Nil)
+            // result could be a return value or an error 
+            match result {
+                Err(LoxError::Return(value)) => Ok(value),
+                Err(LoxError::Error(msg)) => error!(msg), 
+                Ok(()) => Ok(Value::Nil),
+            }
         }
     }
 }

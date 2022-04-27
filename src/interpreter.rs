@@ -4,15 +4,15 @@ use crate::expr::{
     AssignExpr, BinaryExpr, Expr, GroupExpr, UnaryExpr, VariableExpr, CallExpr,
 };
 use crate::stmt::{
-    BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt,
-    FunStmt,
+   BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt,
+    FunStmt, ReturnStmt,
 };
 use crate::token::{Token, TokenType};
 use crate::functions::{Function, Callable};
 
 use float_eq::{float_eq, float_ne};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Value {
     Nil,
     Number(f64),
@@ -49,7 +49,18 @@ impl Interpreter {
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
             Stmt::Function(stmt) => self.fun_decl(stmt), 
-            Stmt::Return(_stmt) => todo!(),
+            Stmt::Return(stmt) => self.execute_return(stmt),
+        }
+    }
+
+    fn execute_return(&mut self, stmt: &ReturnStmt) -> Result<(), LoxError> {
+        if let Some(ref v) = stmt.value { 
+            let value = self.evaluate(v)?;
+            Err(LoxError::Return(value))
+        } else {
+            // return keyword followd by no expression 
+            // e.g `return;`
+            Err(LoxError::Return(Value::Nil))
         }
     }
 
