@@ -38,18 +38,18 @@ impl Callable for Function {
             intp.memory.new_block();
 
             // bind all argument values to function parameters in the new frame
-            self.declaration.params 
+            let _ = self.declaration.params 
                 .iter()
                 .zip(args.iter()) // combines two iters into one tuple
                 .try_for_each(|(name, value)| {
                     intp.memory.define(&name.lexeme, value.clone())
-                })?;
+                });
 
             // interpret function statements in the context of newly created frame
             let result = intp.interpret(&self.declaration.body);
             // remove new frame after interpreting body of function 
             intp.memory.exit_block();
-            // result could be a return value or an error 
+            // result could be a return value or an error or nothing
             match result {
                 Err(LoxError::Return(value)) => Ok(value),
                 Err(LoxError::Error(msg)) => error!(msg), 
