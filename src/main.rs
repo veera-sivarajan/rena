@@ -19,10 +19,10 @@ use std::{
 fn get_input() -> String {
     let mut input = String::new();
     input.clear();
-    print!(">> ");
-    let _flush = stdout().flush();
-    let _bytes_read = std::io::stdin().read_line(&mut input).unwrap();
-    let _last_char = input.pop();
+    print!("rena$ ");
+    let _ = stdout().flush();
+    let _ = std::io::stdin().read_line(&mut input).unwrap();
+    let _ = input.pop();
 
     input
 }

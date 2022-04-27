@@ -17,7 +17,7 @@ pub enum Expr {
 
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &*self {
+        match self {
             Expr::Binary(expr) => expr.fmt(f),
             Expr::Unary(expr) => expr.fmt(f),
             Expr::Number(expr) => expr.fmt(f),
