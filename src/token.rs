@@ -47,10 +47,10 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, lexeme: String, line: i32) -> Token {
+    pub fn new(token_type: TokenType, lexeme: &str, line: i32) -> Token {
         Token {
             token_type,
-            lexeme,
+            lexeme: lexeme.to_owned(),
             line,
         }
     }

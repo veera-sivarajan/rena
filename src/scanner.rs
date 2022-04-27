@@ -35,9 +35,9 @@ fn is_alphanumeric(c: char) -> bool {
 }
 
 impl Scanner {
-    pub fn new(source: String) -> Scanner {
+    pub fn new(source: &str) -> Scanner {
         Scanner {
-            source,
+            source: source.to_owned(),
             tokens: Vec::new(),
             start: 0,
             current: 0,
@@ -58,10 +58,10 @@ impl Scanner {
             // Trim surrounding quotes
             let trim_str = &text[1..(text.len() - 1)];
             self.tokens
-                .push(Token::new(token_type, trim_str.to_string(), self.line));
+                .push(Token::new(token_type, trim_str, self.line));
         } else {
             self.tokens
-                .push(Token::new(token_type, text.to_string(), self.line));
+                .push(Token::new(token_type, text, self.line));
         }
         Ok(())
     }

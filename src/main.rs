@@ -27,7 +27,7 @@ fn get_input() -> String {
     input
 }
 
-fn run(src: String, intp: &mut Interpreter) -> Result<(), LoxError> {
+fn run(src: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
     let tokens = scanner::Scanner::new(src).scan_tokens()?;
     let ast = parser::Parser::new(tokens).parse()?;
     intp.interpret(&ast)
@@ -36,7 +36,7 @@ fn run(src: String, intp: &mut Interpreter) -> Result<(), LoxError> {
 fn run_file(path: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
     let file_string = fs::read_to_string(path)
         .expect("Source file cannot be read.");
-    run(file_string, intp)
+    run(&file_string, intp)
 }
 
 fn main() {
@@ -48,7 +48,7 @@ fn main() {
             if input == "exit" {
                 std::process::exit(0);
             } else if !input.is_empty() {
-                match run(input, &mut interpreter) {
+                match run(&input, &mut interpreter) {
                     Ok(()) => continue,
                     Err(some_error) => eprintln!("{}", some_error),
                 }
