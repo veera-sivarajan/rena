@@ -25,6 +25,7 @@ lazy_static! {
         hash_map.insert("while".to_owned(), TokenType::While);
         hash_map.insert("for".to_owned(), TokenType::For);
         hash_map.insert("fun".to_owned(), TokenType::Fun);
+        hash_map.insert("return".to_owned(), TokenType::Return);
         hash_map
     };
 }

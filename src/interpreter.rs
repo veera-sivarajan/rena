@@ -49,6 +49,7 @@ impl Interpreter {
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
             Stmt::Function(stmt) => self.fun_decl(stmt), 
+            Stmt::Return(_stmt) => todo!(),
         }
     }
 
@@ -57,7 +58,7 @@ impl Interpreter {
         self.memory.define(&statement.name.lexeme, Value::Function(func))
     }
 
-    fn is_truthy(&self, object: Value) -> bool {
+    fn is_truthy(&self, object: Value) -> bool { 
         match object {
             Value::Nil => false,
             Value::Bool(value) => value,

@@ -9,6 +9,7 @@ pub enum Stmt {
     If(IfStmt),
     While(WhileStmt),
     Function(FunStmt),
+    Return(ReturnStmt),
 }
 
 #[derive(Clone)]
@@ -51,3 +52,10 @@ pub struct FunStmt {
     pub params: Vec<Token>,
     pub body: Vec<Stmt>,
 }
+
+#[derive(Clone)]
+pub struct ReturnStmt {
+    pub keyword: Token,
+    pub value: Option<Expr>,
+}
+    

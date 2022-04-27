@@ -36,6 +36,7 @@ pub enum TokenType {
     While,
     For,
     Fun,
+    Return,
 }
 
 #[derive(Clone, Debug)]
@@ -92,6 +93,7 @@ impl TokenType {
             TokenType::For => String::from("For"),
             TokenType::Comma => String::from("Comma"),
             TokenType::Fun => String::from("Fun"),
+            TokenType::Return => String::from("Return"),
         }
     }
 }

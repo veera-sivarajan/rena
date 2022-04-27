@@ -5,7 +5,7 @@ use crate::expr::{
 };
 use crate::stmt::{
     BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt,
-    WhileStmt, FunStmt,
+    WhileStmt, FunStmt, ReturnStmt,
 };
 use crate::token::{Token, TokenType};
 
@@ -132,6 +132,7 @@ impl Parser {
         }
     }
 
+    // entry point for parsing statements
     fn statement(&mut self) -> Result<Stmt, LoxError> {
         if matches!(self, TokenType::Print) {
             self.print_stmt()
@@ -144,9 +145,24 @@ impl Parser {
             self.while_stmt()
         } else if matches!(self, TokenType::For) {
             self.for_stmt()
+        } else if matches!(self, TokenType::Return) {
+            self.return_stmt()
         } else {
             self.expression_stmt()
         }
+    }
+
+    fn return_stmt(&mut self) -> Result<Stmt, LoxError> {
+        let keyword = self.previous();
+        let mut value = None;
+        if !self.check(TokenType::Semicolon) {
+            value = Some(self.expression()?);
+        }
+        self.consume(TokenType::Semicolon, "Expect ';' after return value.")?;
+        Ok(Stmt::Return(ReturnStmt {
+            keyword,
+            value,
+        }))
     }
 
     fn for_stmt(&mut self) -> Result<Stmt, LoxError> {
