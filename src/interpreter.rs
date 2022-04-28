@@ -109,7 +109,7 @@ impl Interpreter {
             Value::Bool(tof) => format!("{}", tof),
             Value::String(value) => value,
             Value::Nil => "nil".to_string(),
-            Value::Function(fun) => format!("<function {}>",
+            Value::Function(fun) => format!("<fn {}>",
                                             fun.declaration.name.lexeme), 
         }
     }

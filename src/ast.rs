@@ -1,3 +1,5 @@
+// NOTE This module is not used by the project anymore
+// but leaving it here assuming I'd need it in the future
 use crate::expr::Expr;
 
 pub fn print_ast(expr: &Expr) {

@@ -30,7 +30,7 @@ fn get_input() -> String {
 fn run(src: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
     let tokens = scanner::Scanner::new(src).scan_tokens()?;
     let ast = parser::Parser::new(tokens).parse()?;
-    intp.interpret(&ast)
+    intp.interpret(&ast) // borrowing ast because resolver needs it 
 }
 
 fn run_file(path: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
@@ -42,7 +42,7 @@ fn run_file(path: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
 fn main() {
     let args: Vec<String> = env::args().collect();
     let mut interpreter = Interpreter::new();
-    if args.len() == 1 {
+    if args.len() == 1 { 
         loop {
             let input = get_input();
             if input == "exit" {
