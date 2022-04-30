@@ -45,9 +45,7 @@ fn main() {
     if args.len() == 1 { 
         loop {
             let input = get_input();
-            if input == "exit" {
-                std::process::exit(0);
-            } else if !input.is_empty() {
+            if !input.is_empty() {
                 match run(&input, &mut interpreter) {
                     Ok(()) => continue,
                     Err(some_error) => eprintln!("{}", some_error),

@@ -65,7 +65,7 @@ impl Interpreter {
     }
 
     fn fun_decl(&mut self, statement: &FunStmt) -> Result<(), LoxError> {
-        let func = Function::new(statement.clone());
+        let func = Function::new(statement.to_owned());
         self.memory.define(&statement.name.lexeme, Value::Function(func))
     }
 
