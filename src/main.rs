@@ -43,6 +43,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut interpreter = Interpreter::new();
     if args.len() == 1 { 
+        // REPL mode
         loop {
             let input = get_input();
             if !input.is_empty() {
@@ -55,6 +56,7 @@ fn main() {
             }
         }
     } else {
+        // Run a file
         match run_file(&args[1], &mut interpreter) {
             Ok(()) => {}
             Err(some_error) => eprintln!("{}", some_error),

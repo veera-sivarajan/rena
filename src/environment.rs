@@ -36,18 +36,16 @@ impl Environment {
             .iter()
             .rev()
             .find(|f| f.contains_key(name));
-        
+
         if let Some(f) = frame {
             f.get(name)
         } else {
             None
         }
+
     }
 
-    pub fn assign(&mut self,
-                  name: &str,
-                  value: Value
-    ) -> Result<Value, LoxError> {
+    pub fn assign(&mut self, name: &str, value: Value) -> Result<Value, LoxError> {
         let frame = self.frame_list
             .iter_mut()
             .rev()
