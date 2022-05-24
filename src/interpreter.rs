@@ -64,6 +64,8 @@ impl Interpreter {
         }
     }
 
+    // TODO a function declaration should capture the environment
+    // it is defined in
     fn fun_decl(&mut self, statement: &FunStmt) -> Result<(), LoxError> {
         let func = Function::new(statement.to_owned());
         self.memory.define(&statement.name.lexeme, Value::Function(func))
@@ -141,9 +143,10 @@ impl Interpreter {
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
         match self.memory.fetch(&name.lexeme) {
-            None => error!("Undeclared variable."),
+            None => error!(format!("Undeclared variable '{}'.", name.lexeme)),
             Some(value) => match value {
-                Value::Nil => error!("Uninitialized variable."),
+                Value::Nil => error!(format!("Uninitialized variable '{}'.",
+                                             name.lexeme)),
                 _ => Ok(value.clone()),
             },
         }
