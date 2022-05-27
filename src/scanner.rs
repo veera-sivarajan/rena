@@ -26,6 +26,7 @@ lazy_static! {
         hash_map.insert("for".to_owned(), TokenType::For);
         hash_map.insert("fun".to_owned(), TokenType::Fun);
         hash_map.insert("return".to_owned(), TokenType::Return);
+        hash_map.insert("until".to_owned(), TokenType::Until);
         hash_map
     };
 }
@@ -83,12 +84,21 @@ impl Scanner {
             '.' => self.add_token(TokenType::Dot),
             '-' => self.add_token(TokenType::Minus),
             '+' => self.add_token(TokenType::Plus),
-            '/' => self.add_token(TokenType::Slash),
             '*' => self.add_token(TokenType::Star),
             ';' => self.add_token(TokenType::Semicolon),
             '{' => self.add_token(TokenType::LeftBrace),
             '}' => self.add_token(TokenType::RightBrace),
             ',' => self.add_token(TokenType::Comma),
+            '/' => {
+                if self.matches('/') {
+                    while self.peek() != '\n' && !self.is_end() {
+                        self.advance();
+                    }
+                    Ok(())
+                } else {
+                    self.add_token(TokenType::Slash)
+                }
+            }
             '!' => {
                 let new_type = if self.matches('=') {
                     TokenType::BangEqual
