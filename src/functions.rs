@@ -1,6 +1,7 @@
 use crate::interpreter::{Interpreter, Value};
 use crate::stmt::FunStmt;
 use crate::err::LoxError;
+use crate::environment::Environment;
 
 pub trait Callable {
     fn arity(&self) -> usize; // maximum number of arguments is 255
@@ -12,12 +13,13 @@ pub trait Callable {
 
 #[derive(Clone, Debug)]
 pub struct Function {
-    pub declaration: FunStmt
+    pub declaration: FunStmt,
+    env: Environment, // surrounding environment
 }
 
 impl Function {
-    pub fn new(declaration: FunStmt) -> Function {
-        Function { declaration }
+    pub fn new(declaration: FunStmt, env: Environment) -> Function {
+        Function { declaration, env }
     }
 }
 
@@ -36,7 +38,12 @@ impl Callable for Function {
         } else {
             // create a new frame
             intp.memory.new_block();
-
+            for f in &self.env.frame_list {
+                for (key, val) in f {
+                    let _ = intp.memory.define(key, val.clone());
+                }
+            }
+            intp.memory.new_block();
             // bind all argument values to function parameters in the new frame
             let _ = self.declaration.params 
                 .iter()
@@ -48,6 +55,7 @@ impl Callable for Function {
             // interpret function statements in the context of newly created frame
             let result = intp.interpret(&self.declaration.body);
             // remove new frame after interpreting body of function 
+            intp.memory.exit_block();
             intp.memory.exit_block();
             // result could be a return value or an error or nothing
             match result {

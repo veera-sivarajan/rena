@@ -2,9 +2,9 @@ use crate::err::LoxError;
 use crate::interpreter::Value;
 use std::collections::HashMap;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Environment {
-    frame_list: Vec<HashMap<String, Value>>,
+    pub frame_list: Vec<HashMap<String, Value>>,
 }
 
 impl Environment {
@@ -32,9 +32,9 @@ impl Environment {
     }
 
     pub fn fetch(&self, name: &str) -> Option<&Value> {
-        let frame = self.frame_list
+        let frame = self.frame_list 
             .iter()
-            .rev()
+            .rev() // traverse from inner scope
             .find(|f| f.contains_key(name));
         
         if let Some(f) = frame {
