@@ -152,6 +152,20 @@ impl Parser {
         }
     }
 
+    // until (condition) {
+    //     body;
+    // }
+    // fn until_stmt(&mut self) -> Result<Stmt, LoxError> {
+    //     self.consume(TokenType::LeftParen, "Expect '(' after 'until'.")?;
+    //     let condition = self.expression()?; // Boolean(bool)
+    //     self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
+    //     let body = self.statement()?; 
+    //     Ok(Stmt::While(WhileStmt {
+    //         condition  
+    //         body: Box::new(body),
+    //     }))
+    // }
+            
     fn return_stmt(&mut self) -> Result<Stmt, LoxError> {
         let keyword = self.previous();
         let mut value = None;

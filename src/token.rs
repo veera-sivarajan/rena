@@ -37,6 +37,7 @@ pub enum TokenType {
     For,
     Fun,
     Return,
+    Until,
 }
 
 #[derive(Clone, Debug)]
