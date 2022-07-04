@@ -5,7 +5,7 @@ use crate::expr::{
 };
 use crate::stmt::{
     BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt,
-    WhileStmt, FunStmt, ReturnStmt,
+    WhileStmt, FunStmt, ReturnStmt, MVarStmt,
 };
 use crate::token::{Token, TokenType};
 
@@ -80,11 +80,35 @@ impl Parser {
     fn declaration(&mut self) -> Result<Stmt, LoxError> {
         if matches!(self, TokenType::Var) {
             self.var_declaration()
+        } else if matches!(self, TokenType::MVar) {
+            self.mvar()
         } else if matches!(self, TokenType::Fun) {
             self.function()
         } else {
             self.statement()
         }
+    }
+
+    // add(1, 2, 3)
+    // mvar a, b, c = 1, 2, 3;
+    fn mvar(&mut self) -> Result<Stmt, LoxError> {
+        let mut names = vec![];
+        while !self.check(TokenType::Equal) {
+            names.push(self.consume(TokenType::Identifier, "Expect var name.")?);
+            if !self.check(TokenType::Equal) {
+                self.consume(TokenType::Comma, "Expect comma between names.")?;
+            }
+        }
+        self.consume(TokenType::Equal, "Expect `=`")?;
+        let mut values = vec![];
+        while !self.check(TokenType::Semicolon) {
+            values.push(self.expression()?);
+            if !self.check(TokenType::Semicolon) {
+                self.consume(TokenType::Comma, "Expect comma between values.")?;
+            }
+        }
+        self.consume(TokenType::Semicolon, "Expect semicolon.")?;
+        Ok(Stmt::MVar(MVarStmt { names, values }))
     }
 
     fn function(&mut self) -> Result<Stmt, LoxError> {
@@ -117,6 +141,8 @@ impl Parser {
         }))
     }
 
+    // var a = 5;
+    // var b;
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
         let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
         if matches!(self, TokenType::Equal) {
@@ -126,7 +152,9 @@ impl Parser {
                 name,
                 init: Some(init),
             }))
-        } else {
+        }
+
+        else {
             self.consume(TokenType::Semicolon, "Expect semicolon.")?;
             Ok(Stmt::Var(VarStmt { name, init: None }))
         }
@@ -219,6 +247,13 @@ impl Parser {
             body: Box::new(body),
         }))
     }
+
+    
+// if (1 > 4) {
+//    ...
+// } else {
+//     ...
+// }
 
     fn if_stmt(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;

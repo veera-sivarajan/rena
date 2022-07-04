@@ -5,7 +5,7 @@ use crate::expr::{
 };
 use crate::stmt::{
    BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt,
-    FunStmt, ReturnStmt,
+    FunStmt, ReturnStmt, MVarStmt,
 };
 use crate::token::{Token, TokenType};
 use crate::functions::{Function, Callable};
@@ -50,7 +50,16 @@ impl Interpreter {
             Stmt::While(stmt) => self.execute_while(stmt),
             Stmt::Function(stmt) => self.fun_decl(stmt), 
             Stmt::Return(stmt) => self.execute_return(stmt),
+            Stmt::MVar(stmt) => self.execute_mvar(stmt),
         }
+    }
+
+    fn execute_mvar(&mut self, stmt: &MVarStmt) -> Result<(), LoxError> {
+        for (index, ele) in stmt.names.iter().enumerate() {
+            let value = self.evaluate(&stmt.values[index])?;
+            self.memory.define(&ele.lexeme, value);
+        }
+        Ok(())
     }
 
     fn execute_return(&mut self, stmt: &ReturnStmt) -> Result<(), LoxError> {
@@ -98,6 +107,8 @@ impl Interpreter {
             Ok(())
         }
     }
+
+    // print 5 + 1;
 
     fn print(&mut self, stmt: &PrintStmt) -> Result<(), LoxError> {
         let value = self.evaluate(&stmt.expr)?;
@@ -203,6 +214,11 @@ impl Interpreter {
         }
 
     }
+
+    // a = b = 5
+    // a, b = 6, 7
+    // a = 6, b = 7
+    // mvar a, b = 6, 7
 
     fn assignment(&mut self,
                   expression: &AssignExpr

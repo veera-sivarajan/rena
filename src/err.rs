@@ -10,7 +10,6 @@ macro_rules! error {
 
 #[derive(Debug)]
 pub enum LoxError {
-    Return(Value),
     Error(String),
 }
 
