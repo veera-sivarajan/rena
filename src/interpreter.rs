@@ -141,7 +141,10 @@ impl Interpreter {
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
         match self.memory.fetch(&name.lexeme) {
-            None => error!("Undeclared variable."),
+            None => {
+                let msg = format!("Undeclared variable '{}'", name.lexeme);
+                error!(msg.as_str())
+            }
             Some(value) => match value {
                 Value::Nil => error!("Uninitialized variable."),
                 _ => Ok(value.clone()),
