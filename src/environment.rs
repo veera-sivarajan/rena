@@ -1,61 +1,58 @@
 use crate::err::LoxError;
 use crate::interpreter::Value;
 use std::collections::HashMap;
+use std::cell::RefCell;
+use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Environment {
-    frame_list: Vec<HashMap<String, Value>>,
+    closure: Option<Rc<RefCell<Environment>>>,
+    values: HashMap<String, Value>,
 }
 
 impl Environment {
     pub fn new() -> Environment {
         Environment {
-            frame_list: vec![HashMap::new()],
+            closure: None,
+            values: HashMap::new()
         }
     }
 
-    pub fn new_block(&mut self) {
-        self.frame_list.push(HashMap::new());
-    }
-
-    pub fn exit_block(&mut self) {
-        self.frame_list.pop();
-    }
-
-    pub fn define(&mut self, name: &str, value: Value) -> Result<(), LoxError> {
-        if let Some(frame) = self.frame_list.last_mut() {
-            frame.insert(name.to_owned(), value);
-            Ok(())
-        } else {
-            error!("Frame not available.")
+    pub fn with_enclosing(closure: Rc<RefCell<Environment>>) -> Environment {
+        Environment {
+            closure: Some(closure),
+            values: HashMap::new(),
         }
     }
 
-    pub fn fetch(&self, name: &str) -> Option<&Value> {
-        let frame = self.frame_list
-            .iter()
-            .rev()
-            .find(|f| f.contains_key(name));
-
-        if let Some(f) = frame {
-            f.get(name)
-        } else {
-            None
-        }
-
+    pub fn define(&mut self, name: &str, value: Value) {
+        self.values.insert(name.to_owned(), value);
     }
 
     pub fn assign(&mut self, name: &str, value: Value) -> Result<Value, LoxError> {
-        let frame = self.frame_list
-            .iter_mut()
-            .rev()
-            .find(|f| f.contains_key(name));
-
-        if let Some(f) = frame {
-            f.insert(name.to_owned(), value.clone());
-            Ok(value)
+        if self.values.contains_key(name) {
+            Ok(self.values.insert(name.to_string(), value).unwrap())
         } else {
-            error!("Undefined variable.")
+            match &self.closure {
+                Some(env) => {
+                    env.borrow_mut().assign(name, value)
+                }
+                None => {
+                    error!(format!("Cannot assign to undeclared variable `{}`", name))
+                }
+            }
+        }
+
+    }
+
+    pub fn fetch(&self, name: &str) -> Option<Value> {
+        match self.values.get(name) {
+            Some(val) => Some(val.clone()),
+            None => match &self.closure {
+                Some(env) => env.borrow().fetch(name),
+                None => None,
+            }
         }
     }
 }
+

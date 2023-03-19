@@ -27,7 +27,10 @@ lazy_static! {
         hash_map.insert("fun".to_owned(), TokenType::Fun);
         hash_map.insert("return".to_owned(), TokenType::Return);
         hash_map.insert("until".to_owned(), TokenType::Until);
+<<<<<<< HEAD
         hash_map.insert("mvar".to_owned(), TokenType::MVar);
+=======
+>>>>>>> closure
         hash_map
     };
 }
@@ -51,7 +54,10 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
-    fn add_token(&mut self, token_type: TokenType) -> Result<(), LoxError> {
+    fn add_token(
+        &mut self,
+        token_type: TokenType,
+    ) -> Result<(), LoxError> {
         let text = self
             .source
             .get(self.start..self.current)
@@ -62,14 +68,15 @@ impl Scanner {
             self.tokens
                 .push(Token::new(token_type, trim_str, self.line));
         } else {
-            self.tokens
-                .push(Token::new(token_type, text, self.line));
+            self.tokens.push(Token::new(token_type, text, self.line));
         }
         Ok(())
     }
 
     fn matches(&mut self, expected: char) -> bool {
-        if self.is_end() || self.source.chars().nth(self.current).unwrap() != expected {
+        if self.is_end()
+            || self.source.chars().nth(self.current).unwrap() != expected
+        {
             false
         } else {
             self.current += 1;
@@ -85,12 +92,21 @@ impl Scanner {
             '.' => self.add_token(TokenType::Dot),
             '-' => self.add_token(TokenType::Minus),
             '+' => self.add_token(TokenType::Plus),
-            '/' => self.add_token(TokenType::Slash),
             '*' => self.add_token(TokenType::Star),
             ';' => self.add_token(TokenType::Semicolon),
             '{' => self.add_token(TokenType::LeftBrace),
             '}' => self.add_token(TokenType::RightBrace),
             ',' => self.add_token(TokenType::Comma),
+            '/' => {
+                if self.matches('/') {
+                    while self.peek() != '\n' && !self.is_end() {
+                        self.advance();
+                    }
+                    Ok(())
+                } else {
+                    self.add_token(TokenType::Slash)
+                }
+            }
             '!' => {
                 let new_type = if self.matches('=') {
                     TokenType::BangEqual

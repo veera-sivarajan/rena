@@ -1,5 +1,22 @@
+<<<<<<< HEAD
 var breakfast = "beignets";
 var beverage = "cafe au lait";
 breakfast = "beignets with " + beverage;
 
 print breakfast;
+=======
+fun makeCounter() {
+    var i = 0;
+    fun count() {
+        print "Inside count()";
+        print i;
+        i = i + 1;
+        print i;
+    }
+    return count;
+}
+
+var c = makeCounter();
+c(); // 1
+c(); // 2
+>>>>>>> closure

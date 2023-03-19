@@ -1,16 +1,24 @@
 use crate::environment::Environment;
 use crate::err::LoxError;
 use crate::expr::{
-    AssignExpr, BinaryExpr, Expr, GroupExpr, UnaryExpr, VariableExpr, CallExpr,
+    AssignExpr, BinaryExpr, CallExpr, Expr, GroupExpr, UnaryExpr,
+    VariableExpr,
 };
+use crate::functions::{Callable, Function};
 use crate::stmt::{
+<<<<<<< HEAD
    BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt,
     FunStmt, ReturnStmt, MVarStmt,
+=======
+    BlockStmt, ExpressionStmt, FunStmt, IfStmt, PrintStmt, ReturnStmt,
+    Stmt, VarStmt, WhileStmt,
+>>>>>>> closure
 };
 use crate::token::{Token, TokenType};
-use crate::functions::{Function, Callable};
 
 use float_eq::{float_eq, float_ne};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub enum Value {
@@ -22,22 +30,24 @@ pub enum Value {
 }
 
 pub struct Interpreter {
-    pub memory: Environment,
+    pub memory: Rc<RefCell<Environment>>,
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
-            memory: Environment::new(),
+            memory: Rc::new(RefCell::new(Environment::new())),
         }
     }
 
-    pub fn interpret(&mut self, statements: &[Stmt]) -> Result<(), LoxError> {
-        // try_for_each returns Ok(()) if none of the items in the iterator
-        // return an error on applying the closure
-        statements
-            .iter()
-            .try_for_each(|stmt| self.execute(stmt))
+    pub fn interpret(
+        &mut self,
+        statements: &[Stmt],
+    ) -> Result<(), LoxError> {
+        for stmt in statements {
+            self.execute(stmt)?;
+        }
+        Ok(())
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
@@ -45,15 +55,19 @@ impl Interpreter {
             Stmt::Print(stmt) => self.print(stmt),
             Stmt::Expression(stmt) => self.expression(stmt),
             Stmt::Var(stmt) => self.var(stmt),
-            Stmt::Block(stmt) => self.block(stmt),
+            Stmt::Block(stmt) => {
+                self.block(&stmt.statements,
+                           Rc::new(RefCell::new(Environment::with_enclosing(self.memory.clone()))))
+            }
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
-            Stmt::Function(stmt) => self.fun_decl(stmt), 
+            Stmt::Function(stmt) => self.fun_decl(stmt),
             Stmt::Return(stmt) => self.execute_return(stmt),
             Stmt::MVar(stmt) => self.execute_mvar(stmt),
         }
     }
 
+<<<<<<< HEAD
     fn execute_mvar(&mut self, stmt: &MVarStmt) -> Result<(), LoxError> {
         for (index, ele) in stmt.names.iter().enumerate() {
             let value = self.evaluate(&stmt.values[index])?;
@@ -64,10 +78,17 @@ impl Interpreter {
 
     fn execute_return(&mut self, stmt: &ReturnStmt) -> Result<(), LoxError> {
         if let Some(ref v) = stmt.value { 
+=======
+    fn execute_return(
+        &mut self,
+        stmt: &ReturnStmt,
+    ) -> Result<(), LoxError> {
+        if let Some(ref v) = stmt.value {
+>>>>>>> closure
             let value = self.evaluate(v)?;
             Err(LoxError::Return(value))
         } else {
-            // return keyword followd by no expression 
+            // return keyword followd by no expression
             // e.g `return;`
             Err(LoxError::Return(Value::Nil))
         }
@@ -76,11 +97,15 @@ impl Interpreter {
     // TODO a function declaration should capture the environment
     // it is defined in
     fn fun_decl(&mut self, statement: &FunStmt) -> Result<(), LoxError> {
-        let func = Function::new(statement.to_owned());
-        self.memory.define(&statement.name.lexeme, Value::Function(func))
+        let func =
+            Function::new(statement.to_owned(), self.memory.clone());
+        self.memory
+            .borrow_mut()
+            .define(&statement.name.lexeme, Value::Function(func));
+        Ok(())
     }
 
-    fn is_truthy(&self, object: Value) -> bool { 
+    fn is_truthy(&self, object: Value) -> bool {
         match object {
             Value::Nil => false,
             Value::Bool(value) => value,
@@ -88,7 +113,10 @@ impl Interpreter {
         }
     }
 
-    fn execute_while(&mut self, statement: &WhileStmt) -> Result<(), LoxError> {
+    fn execute_while(
+        &mut self,
+        statement: &WhileStmt,
+    ) -> Result<(), LoxError> {
         let mut value = self.evaluate(&statement.condition)?;
         while self.is_truthy(value) {
             self.execute(&statement.body)?;
@@ -118,16 +146,20 @@ impl Interpreter {
 
     fn stringify(&self, result: Value) -> String {
         match result {
-            Value::Number(num) => format!("{}", num),
-            Value::Bool(tof) => format!("{}", tof),
+            Value::Number(num) => format!("{num}"),
+            Value::Bool(tof) => format!("{tof}"),
             Value::String(value) => value,
             Value::Nil => "nil".to_string(),
-            Value::Function(fun) => format!("<fn {}>",
-                                            fun.declaration.name.lexeme), 
+            Value::Function(fun) => {
+                format!("<fn {}>", fun.declaration.name.lexeme)
+            }
         }
     }
 
-    fn expression(&mut self, stmt: &ExpressionStmt) -> Result<(), LoxError> {
+    fn expression(
+        &mut self,
+        stmt: &ExpressionStmt,
+    ) -> Result<(), LoxError> {
         let _ = self.evaluate(&stmt.expr)?;
         Ok(())
     }
@@ -135,35 +167,60 @@ impl Interpreter {
     fn var(&mut self, decl: &VarStmt) -> Result<(), LoxError> {
         if let Some(init) = &decl.init {
             let value = self.evaluate(init)?;
-            self.memory.define(&decl.name.lexeme, value)
+            self.memory.borrow_mut().define(&decl.name.lexeme, value);
+            Ok(())
         } else {
-            self.memory.define(&decl.name.lexeme, Value::Nil)
+            self.memory.borrow_mut().define(&decl.name.lexeme, Value::Nil);
+            Ok(())
         }
     }
 
-    fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
-        self.memory.new_block();
-        let result = self.interpret(&block.statements);
-        self.memory.exit_block();
-        result
+    pub fn block(&mut self, statements: &[Stmt], env: Rc<RefCell<Environment>>) -> Result<(), LoxError> {
+        let previous = env.clone();
+        self.memory = env;
+        for stmt in statements {
+            self.execute(stmt).map_err(|err| {
+                self.memory = previous.clone();
+                err
+            })?;
+        }
+        self.memory = previous;
+        Ok(())
     }
 
-    fn variable(&self, expression: &VariableExpr) -> Result<Value, LoxError> {
+    fn variable(
+        &self,
+        expression: &VariableExpr,
+    ) -> Result<Value, LoxError> {
         self.look_up(expression.name.clone())
     }
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
+<<<<<<< HEAD
         match self.memory.fetch(&name.lexeme) {
             None => error!(format!("Undeclared variable '{}'.", name.lexeme)),
             Some(value) => match value {
                 Value::Nil => error!(format!("Uninitialized variable '{}'.",
                                              name.lexeme)),
                 _ => Ok(value.clone()),
+=======
+        match self.memory.borrow().fetch(&name.lexeme) {
+            None => {
+                let msg = format!("Undeclared variable '{}'", name.lexeme);
+                error!(msg.as_str())
+            }
+            Some(value) => match value {
+                Value::Nil => error!("Uninitialized variable."),
+                _ => Ok(value),
+>>>>>>> closure
             },
         }
     }
 
-    fn unary(&mut self, expression: &UnaryExpr) -> Result<Value, LoxError> {
+    fn unary(
+        &mut self,
+        expression: &UnaryExpr,
+    ) -> Result<Value, LoxError> {
         let right = self.evaluate(&expression.right)?;
         match expression.oper.token_type {
             TokenType::Minus => match right {
@@ -203,7 +260,8 @@ impl Interpreter {
 
     fn call(&mut self, expr: &CallExpr) -> Result<Value, LoxError> {
         let fun_name = self.evaluate(&expr.callee)?;
-        let args = expr.args
+        let args = expr
+            .args
             .iter() // iterate over the values by reference
             .map(|arg| self.evaluate(arg))
             .collect::<Result<Vec<_>, _>>()?;
@@ -212,9 +270,9 @@ impl Interpreter {
         } else {
             error!("Can only call functions and classes.")
         }
-
     }
 
+<<<<<<< HEAD
     // a = b = 5
     // a, b = 6, 7
     // a = 6, b = 7
@@ -222,44 +280,67 @@ impl Interpreter {
 
     fn assignment(&mut self,
                   expression: &AssignExpr
+=======
+    fn assignment(
+        &mut self,
+        expression: &AssignExpr,
+>>>>>>> closure
     ) -> Result<Value, LoxError> {
         let value = self.evaluate(&expression.value)?;
-        self.memory.assign(&expression.name.lexeme, value)
+        self.memory.borrow_mut().assign(&expression.name.lexeme, value)
     }
 
-    fn group(&mut self, expression: &GroupExpr) -> Result<Value, LoxError> {
+    fn group(
+        &mut self,
+        expression: &GroupExpr,
+    ) -> Result<Value, LoxError> {
         self.evaluate(&expression.expr)
     }
 
-    fn binary(&mut self, expression: &BinaryExpr) -> Result<Value, LoxError> {
+    fn binary(
+        &mut self,
+        expression: &BinaryExpr,
+    ) -> Result<Value, LoxError> {
         let left = self.evaluate(&expression.left)?;
         let right = self.evaluate(&expression.right)?;
 
         match (left, right) {
-            (Value::Number(l), Value::Number(r)) => match expression.oper.token_type {
-                TokenType::EqualEqual => Ok(Value::Bool(float_eq!(l, r, ulps <= 10))),
-                TokenType::BangEqual => Ok(Value::Bool(float_ne!(l, r, ulps <= 10))),
-                TokenType::Plus => Ok(Value::Number(l + r)),
-                TokenType::Minus => Ok(Value::Number(l - r)),
-                TokenType::Slash => self.division(l, r),
-                TokenType::Star => Ok(Value::Number(l * r)),
-                TokenType::Greater => Ok(Value::Bool(l > r)),
-                TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
-                TokenType::Less => Ok(Value::Bool(l < r)),
-                TokenType::LessEqual => Ok(Value::Bool(l <= r)),
-                _ => error!("Unknown operation for numbers."),
-            },
-            (Value::Bool(l), Value::Bool(r)) => match expression.oper.token_type {
-                TokenType::EqualEqual => Ok(Value::Bool(l == r)),
-                TokenType::BangEqual => Ok(Value::Bool(l != r)),
-                _ => error!("Unknown operation for bools."),
-            },
-            (Value::String(l), Value::String(r)) => match expression.oper.token_type {
-                TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
-                TokenType::BangEqual => Ok(Value::Bool(l.ne(&r))),
-                TokenType::Plus => Ok(Value::String(format!("{}{}", l, r))),
-                _ => error!("Unknown operation for strings."),
-            },
+            (Value::Number(l), Value::Number(r)) => {
+                match expression.oper.token_type {
+                    TokenType::EqualEqual => {
+                        Ok(Value::Bool(float_eq!(l, r, ulps <= 10)))
+                    }
+                    TokenType::BangEqual => {
+                        Ok(Value::Bool(float_ne!(l, r, ulps <= 10)))
+                    }
+                    TokenType::Plus => Ok(Value::Number(l + r)),
+                    TokenType::Minus => Ok(Value::Number(l - r)),
+                    TokenType::Slash => self.division(l, r),
+                    TokenType::Star => Ok(Value::Number(l * r)),
+                    TokenType::Greater => Ok(Value::Bool(l > r)),
+                    TokenType::GreaterEqual => Ok(Value::Bool(l >= r)),
+                    TokenType::Less => Ok(Value::Bool(l < r)),
+                    TokenType::LessEqual => Ok(Value::Bool(l <= r)),
+                    _ => error!("Unknown operation for numbers."),
+                }
+            }
+            (Value::Bool(l), Value::Bool(r)) => {
+                match expression.oper.token_type {
+                    TokenType::EqualEqual => Ok(Value::Bool(l == r)),
+                    TokenType::BangEqual => Ok(Value::Bool(l != r)),
+                    _ => error!("Unknown operation for bools."),
+                }
+            }
+            (Value::String(l), Value::String(r)) => {
+                match expression.oper.token_type {
+                    TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
+                    TokenType::BangEqual => Ok(Value::Bool(l.ne(&r))),
+                    TokenType::Plus => {
+                        Ok(Value::String(format!("{}{}", l, r)))
+                    }
+                    _ => error!("Unknown operation for strings."),
+                }
+            }
             _ => match expression.oper.token_type {
                 TokenType::EqualEqual => Ok(Value::Bool(false)),
                 TokenType::BangEqual => Ok(Value::Bool(true)),

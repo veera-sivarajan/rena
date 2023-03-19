@@ -2,12 +2,12 @@
 mod err;
 mod environment;
 mod expr;
+mod functions;
 mod interpreter;
 mod parser;
 mod scanner;
 mod stmt;
 mod token;
-mod functions;
 
 use crate::err::LoxError;
 use crate::interpreter::Interpreter;
@@ -30,20 +30,24 @@ fn get_input() -> String {
 fn run(src: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
     let tokens = scanner::Scanner::new(src).scan_tokens()?;
     let ast = parser::Parser::new(tokens).parse()?;
-    intp.interpret(&ast) // borrowing ast because resolver needs it 
+    intp.interpret(&ast) // borrowing ast because resolver needs it
 }
 
 fn run_file(path: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
-    let file_string = fs::read_to_string(path)
-        .expect("Source file cannot be read.");
+    let file_string =
+        fs::read_to_string(path).expect("Source file cannot be read.");
     run(&file_string, intp)
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let mut interpreter = Interpreter::new();
+<<<<<<< HEAD
     if args.len() == 1 { 
         // REPL mode
+=======
+    if args.len() == 1 {
+>>>>>>> closure
         loop {
             let input = get_input();
             if !input.is_empty() {
