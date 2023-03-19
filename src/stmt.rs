@@ -10,13 +10,6 @@ pub enum Stmt {
     While(WhileStmt),
     Function(FunStmt),
     Return(ReturnStmt),
-    MVar(MVarStmt),
-}
-
-#[derive(Clone, Debug)]
-pub struct MVarStmt {
-    pub names: Vec<Token>,
-    pub values: Vec<Expr>,
 }
 
 #[derive(Clone, Debug)]

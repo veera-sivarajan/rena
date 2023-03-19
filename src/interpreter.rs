@@ -6,13 +6,8 @@ use crate::expr::{
 };
 use crate::functions::{Callable, Function};
 use crate::stmt::{
-<<<<<<< HEAD
-   BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt, WhileStmt,
-    FunStmt, ReturnStmt, MVarStmt,
-=======
-    BlockStmt, ExpressionStmt, FunStmt, IfStmt, PrintStmt, ReturnStmt,
-    Stmt, VarStmt, WhileStmt,
->>>>>>> closure
+    ExpressionStmt, FunStmt, IfStmt, PrintStmt, ReturnStmt, Stmt, VarStmt,
+    WhileStmt,
 };
 use crate::token::{Token, TokenType};
 
@@ -27,6 +22,16 @@ pub enum Value {
     Bool(bool),
     String(String),
     Function(Function),
+}
+
+impl From<Value> for bool {
+    fn from(value: Value) -> bool {
+        match value {
+            Value::Nil => false,
+            Value::Bool(value) => value,
+            _ => true,
+        }
+    }
 }
 
 pub struct Interpreter {
@@ -55,36 +60,24 @@ impl Interpreter {
             Stmt::Print(stmt) => self.print(stmt),
             Stmt::Expression(stmt) => self.expression(stmt),
             Stmt::Var(stmt) => self.var(stmt),
-            Stmt::Block(stmt) => {
-                self.block(&stmt.statements,
-                           Rc::new(RefCell::new(Environment::with_enclosing(self.memory.clone()))))
-            }
+            Stmt::Block(stmt) => self.block(
+                &stmt.statements,
+                Rc::new(RefCell::new(Environment::with_enclosing(
+                    self.memory.clone(),
+                ))),
+            ),
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
             Stmt::Function(stmt) => self.fun_decl(stmt),
             Stmt::Return(stmt) => self.execute_return(stmt),
-            Stmt::MVar(stmt) => self.execute_mvar(stmt),
         }
     }
 
-<<<<<<< HEAD
-    fn execute_mvar(&mut self, stmt: &MVarStmt) -> Result<(), LoxError> {
-        for (index, ele) in stmt.names.iter().enumerate() {
-            let value = self.evaluate(&stmt.values[index])?;
-            self.memory.define(&ele.lexeme, value);
-        }
-        Ok(())
-    }
-
-    fn execute_return(&mut self, stmt: &ReturnStmt) -> Result<(), LoxError> {
-        if let Some(ref v) = stmt.value { 
-=======
     fn execute_return(
         &mut self,
         stmt: &ReturnStmt,
     ) -> Result<(), LoxError> {
         if let Some(ref v) = stmt.value {
->>>>>>> closure
             let value = self.evaluate(v)?;
             Err(LoxError::Return(value))
         } else {
@@ -105,20 +98,12 @@ impl Interpreter {
         Ok(())
     }
 
-    fn is_truthy(&self, object: Value) -> bool {
-        match object {
-            Value::Nil => false,
-            Value::Bool(value) => value,
-            _ => true,
-        }
-    }
-
     fn execute_while(
         &mut self,
         statement: &WhileStmt,
     ) -> Result<(), LoxError> {
         let mut value = self.evaluate(&statement.condition)?;
-        while self.is_truthy(value) {
+        while value.into() {
             self.execute(&statement.body)?;
             value = self.evaluate(&statement.condition)?;
         }
@@ -127,7 +112,7 @@ impl Interpreter {
 
     fn execute_if(&mut self, statement: &IfStmt) -> Result<(), LoxError> {
         let value = self.evaluate(&statement.condition)?;
-        if self.is_truthy(value) {
+        if value.into() {
             self.execute(&statement.then_branch)
         } else if let Some(else_branch) = &statement.else_branch {
             self.execute(else_branch)
@@ -170,12 +155,18 @@ impl Interpreter {
             self.memory.borrow_mut().define(&decl.name.lexeme, value);
             Ok(())
         } else {
-            self.memory.borrow_mut().define(&decl.name.lexeme, Value::Nil);
+            self.memory
+                .borrow_mut()
+                .define(&decl.name.lexeme, Value::Nil);
             Ok(())
         }
     }
 
-    pub fn block(&mut self, statements: &[Stmt], env: Rc<RefCell<Environment>>) -> Result<(), LoxError> {
+    pub fn block(
+        &mut self,
+        statements: &[Stmt],
+        env: Rc<RefCell<Environment>>,
+    ) -> Result<(), LoxError> {
         let previous = env.clone();
         self.memory = env;
         for stmt in statements {
@@ -196,14 +187,6 @@ impl Interpreter {
     }
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
-<<<<<<< HEAD
-        match self.memory.fetch(&name.lexeme) {
-            None => error!(format!("Undeclared variable '{}'.", name.lexeme)),
-            Some(value) => match value {
-                Value::Nil => error!(format!("Uninitialized variable '{}'.",
-                                             name.lexeme)),
-                _ => Ok(value.clone()),
-=======
         match self.memory.borrow().fetch(&name.lexeme) {
             None => {
                 let msg = format!("Undeclared variable '{}'", name.lexeme);
@@ -212,7 +195,6 @@ impl Interpreter {
             Some(value) => match value {
                 Value::Nil => error!("Uninitialized variable."),
                 _ => Ok(value),
->>>>>>> closure
             },
         }
     }
@@ -272,22 +254,14 @@ impl Interpreter {
         }
     }
 
-<<<<<<< HEAD
-    // a = b = 5
-    // a, b = 6, 7
-    // a = 6, b = 7
-    // mvar a, b = 6, 7
-
-    fn assignment(&mut self,
-                  expression: &AssignExpr
-=======
     fn assignment(
         &mut self,
         expression: &AssignExpr,
->>>>>>> closure
     ) -> Result<Value, LoxError> {
         let value = self.evaluate(&expression.value)?;
-        self.memory.borrow_mut().assign(&expression.name.lexeme, value)
+        self.memory
+            .borrow_mut()
+            .assign(&expression.name.lexeme, value)
     }
 
     fn group(
@@ -336,7 +310,7 @@ impl Interpreter {
                     TokenType::EqualEqual => Ok(Value::Bool(l.eq(&r))),
                     TokenType::BangEqual => Ok(Value::Bool(l.ne(&r))),
                     TokenType::Plus => {
-                        Ok(Value::String(format!("{}{}", l, r)))
+                        Ok(Value::String(format!("{l}{r}")))
                     }
                     _ => error!("Unknown operation for strings."),
                 }

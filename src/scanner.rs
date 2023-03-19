@@ -27,10 +27,6 @@ lazy_static! {
         hash_map.insert("fun".to_owned(), TokenType::Fun);
         hash_map.insert("return".to_owned(), TokenType::Return);
         hash_map.insert("until".to_owned(), TokenType::Until);
-<<<<<<< HEAD
-        hash_map.insert("mvar".to_owned(), TokenType::MVar);
-=======
->>>>>>> closure
         hash_map
     };
 }

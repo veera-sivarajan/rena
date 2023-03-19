@@ -42,12 +42,7 @@ fn run_file(path: &str, intp: &mut Interpreter) -> Result<(), LoxError> {
 fn main() {
     let args: Vec<String> = env::args().collect();
     let mut interpreter = Interpreter::new();
-<<<<<<< HEAD
-    if args.len() == 1 { 
-        // REPL mode
-=======
     if args.len() == 1 {
->>>>>>> closure
         loop {
             let input = get_input();
             if !input.is_empty() {

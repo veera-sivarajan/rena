@@ -11,6 +11,7 @@ macro_rules! error {
 #[derive(Debug)]
 pub enum LoxError {
     Error(String),
+    Return(Value),
 }
 
 impl Error for LoxError {}

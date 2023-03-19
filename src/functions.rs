@@ -22,8 +22,14 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn new(declaration: FunStmt, closure: Rc<RefCell<Environment>>) -> Function {
-        Function { declaration, closure }
+    pub fn new(
+        declaration: FunStmt,
+        closure: Rc<RefCell<Environment>>,
+    ) -> Function {
+        Function {
+            declaration,
+            closure,
+        }
     }
 }
 
@@ -44,9 +50,9 @@ impl Callable for Function {
                 args.len()
             ))
         } else {
-            let mut env = Environment::with_enclosing(self.closure.clone());
-            self
-                .declaration
+            let mut env =
+                Environment::with_enclosing(self.closure.clone());
+            self.declaration
                 .params
                 .iter()
                 .zip(args.iter()) // combines two iters into one tuple
@@ -54,7 +60,8 @@ impl Callable for Function {
                     env.define(&name.lexeme, value.clone())
                 });
 
-            let result = intp.block(&self.declaration.body, Rc::new(RefCell::new(env)));
+            let result = intp
+                .block(&self.declaration.body, Rc::new(RefCell::new(env)));
             match result {
                 Err(LoxError::Return(value)) => Ok(value),
                 Err(LoxError::Error(msg)) => error!(msg),

@@ -38,10 +38,6 @@ pub enum TokenType {
     Fun,
     Return,
     Until,
-<<<<<<< HEAD
-    MVar,
-=======
->>>>>>> closure
 }
 
 #[derive(Clone, Debug)]
