@@ -1,5 +1,6 @@
 // print "Hello, world";
 
+var global = 100;
 fun makeCounter() {
     var i = 0;
     fun count() {
@@ -10,6 +11,11 @@ fun makeCounter() {
     return count;
 }
 
+
 var counter = makeCounter();
+
+print global;
 counter(); // "1".
-counter();
+print global;
+print global;
+counter(); // "2".

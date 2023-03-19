@@ -6,39 +6,41 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub struct Environment {
-    pub frame_list: Vec<HashMap<String, Value>>,
+    closure: Option<Rc<RefCell<Environment>>>,
+    values: HashMap<String, Value>,
 }
 
 impl Environment {
     pub fn new() -> Environment {
         Environment {
-            frame_list: vec![HashMap::new()],
+            frame_list: Rc::new(RefCell::new(vec![HashMap::new()]))
         }
     }
 
-    pub fn with_enclosing(environment: Rc<RefCell<Environment>>) -> Environment {
-        let mut frames = vec![];
-        frames.append(&mut environment.borrow_mut().frame_list);
-        frames.push(HashMap::new());
+    pub fn with_enclosing(frame_list: Rc<RefCell<Vec<HashMap<String, Value>>>>) -> Environment {
+        // let mut frames = vec![];
+        // frames.append(&mut environment.borrow_mut().frame_list);
+        // frames.push(HashMap::new());
+        frame_list.borrow_mut().push(HashMap::new());
         Environment {
-            frame_list: frames
+            frame_list: frame_list.clone()
         }
     }
 
-    pub fn new_block(&mut self) {
-        self.frame_list.push(HashMap::new());
-    }
+    // pub fn new_block(&mut self) {
+    //     self.frame_list.push(HashMap::new());
+    // }
 
-    pub fn exit_block(&mut self) {
-        self.frame_list.pop();
-    }
+    // pub fn exit_block(&mut self) {
+    //     self.frame_list.pop();
+    // }
 
     pub fn define(
         &mut self,
         name: &str,
         value: Value,
     ) -> Result<(), LoxError> {
-        if let Some(frame) = self.frame_list.last_mut() {
+        if let Some(frame) = self.frame_list.borrow_mut().last_mut() {
             frame.insert(name.to_owned(), value);
             Ok(())
         } else {
@@ -47,13 +49,20 @@ impl Environment {
         }
     }
 
-    pub fn fetch(&self, name: &str) -> Option<&Value> {
-        self
+    pub fn fetch(&self, name: &str) -> &Option<&Value> {
+            
+        let frame = self
             .frame_list
+            .borrow()
             .iter()
             .rev() // traverse from inner scope
-            .find(|f| f.contains_key(name))?
-            .get(name)
+            .find(|f| f.contains_key(name));
+        
+        if let Some(f) = frame {
+            &f.get(name)
+        } else {
+            &None
+        }
     }
 
     pub fn assign(
@@ -61,8 +70,11 @@ impl Environment {
         name: &str,
         value: Value,
     ) -> Result<Value, LoxError> {
-        let frame = self
+        let mut binding= self
             .frame_list
+            .borrow_mut();
+            
+        let frame = binding
             .iter_mut()
             .rev()
             .find(|f| f.contains_key(name));
