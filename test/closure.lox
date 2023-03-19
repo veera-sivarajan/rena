@@ -17,5 +17,5 @@ var counter = makeCounter();
 print global;
 counter(); // "1".
 print global;
-print global;
 counter(); // "2".
+print global;
