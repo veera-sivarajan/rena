@@ -54,10 +54,7 @@ impl Callable for Function {
                     env.define(&name.lexeme, value.clone())
                 })?;
 
-            // interpret function statements in the context of newly created frame
             let result = intp.block(&self.declaration.body, Rc::new(RefCell::new(env)));
-            // remove new frame after interpreting body of function
-            // result could be a return value or an error or nothing
             match result {
                 Err(LoxError::Return(value)) => Ok(value),
                 Err(LoxError::Error(msg)) => error!(msg),
