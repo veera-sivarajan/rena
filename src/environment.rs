@@ -22,21 +22,27 @@ impl Environment {
         self.frame_list.pop();
     }
 
-    pub fn define(&mut self, name: &str, value: Value) -> Result<(), LoxError> {
+    pub fn define(
+        &mut self,
+        name: &str,
+        value: Value,
+    ) -> Result<(), LoxError> {
         if let Some(frame) = self.frame_list.last_mut() {
             frame.insert(name.to_owned(), value);
             Ok(())
         } else {
-            error!("Frame not available.")
+            let msg = format!("Frame not available to define '{name}'");
+            error!(msg.as_str())
         }
     }
 
     pub fn fetch(&self, name: &str) -> Option<&Value> {
-        let frame = self.frame_list 
+        let frame = self
+            .frame_list
             .iter()
             .rev() // traverse from inner scope
             .find(|f| f.contains_key(name));
-        
+
         if let Some(f) = frame {
             f.get(name)
         } else {
@@ -44,11 +50,13 @@ impl Environment {
         }
     }
 
-    pub fn assign(&mut self,
-                  name: &str,
-                  value: Value
+    pub fn assign(
+        &mut self,
+        name: &str,
+        value: Value,
     ) -> Result<Value, LoxError> {
-        let frame = self.frame_list
+        let frame = self
+            .frame_list
             .iter_mut()
             .rev()
             .find(|f| f.contains_key(name));

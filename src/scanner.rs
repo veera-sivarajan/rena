@@ -50,7 +50,10 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
-    fn add_token(&mut self, token_type: TokenType) -> Result<(), LoxError> {
+    fn add_token(
+        &mut self,
+        token_type: TokenType,
+    ) -> Result<(), LoxError> {
         let text = self
             .source
             .get(self.start..self.current)
@@ -61,14 +64,15 @@ impl Scanner {
             self.tokens
                 .push(Token::new(token_type, trim_str, self.line));
         } else {
-            self.tokens
-                .push(Token::new(token_type, text, self.line));
+            self.tokens.push(Token::new(token_type, text, self.line));
         }
         Ok(())
     }
 
     fn matches(&mut self, expected: char) -> bool {
-        if self.is_end() || self.source.chars().nth(self.current).unwrap() != expected {
+        if self.is_end()
+            || self.source.chars().nth(self.current).unwrap() != expected
+        {
             false
         } else {
             self.current += 1;

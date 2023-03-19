@@ -1,11 +1,11 @@
 use crate::err::LoxError;
 use crate::expr::{
-    AssignExpr, BinaryExpr, Expr, GroupExpr, NumberExpr, UnaryExpr, VariableExpr,
-    CallExpr,  
+    AssignExpr, BinaryExpr, CallExpr, Expr, GroupExpr, NumberExpr,
+    UnaryExpr, VariableExpr,
 };
 use crate::stmt::{
-    BlockStmt, ExpressionStmt, IfStmt, PrintStmt, Stmt, VarStmt,
-    WhileStmt, FunStmt, ReturnStmt,
+    BlockStmt, ExpressionStmt, FunStmt, IfStmt, PrintStmt, ReturnStmt,
+    Stmt, VarStmt, WhileStmt,
 };
 use crate::token::{Token, TokenType};
 
@@ -36,9 +36,10 @@ impl Parser {
         self.peek().token_type == TokenType::Eof
     }
 
-    fn consume(&mut self,
-               token_type: TokenType,
-               message: &str
+    fn consume(
+        &mut self,
+        token_type: TokenType,
+        message: &str,
     ) -> Result<Token, LoxError> {
         if self.check(token_type) {
             Ok(self.advance())
@@ -88,37 +89,46 @@ impl Parser {
     }
 
     fn function(&mut self) -> Result<Stmt, LoxError> {
-        let name = self.consume(TokenType::Identifier, "Expect function name.")?;
-        self.consume(TokenType::LeftParen, "Expect '(' after function name.")?;
+        let name =
+            self.consume(TokenType::Identifier, "Expect function name.")?;
+        self.consume(
+            TokenType::LeftParen,
+            "Expect '(' after function name.",
+        )?;
         // parse all parameters
         let mut params: Vec<Token> = vec![];
         if !self.check(TokenType::RightParen) {
-            params.push(self.consume(TokenType::Identifier,
-                                     "Expect parameter name."
+            params.push(self.consume(
+                TokenType::Identifier,
+                "Expect parameter name.",
             )?);
             while matches!(self, TokenType::Comma) {
                 if params.len() < 255 {
-                    params.push(self.consume(TokenType::Identifier,
-                                             "Expect parameter name."
+                    params.push(self.consume(
+                        TokenType::Identifier,
+                        "Expect parameter name.",
                     )?);
                 } else {
                     return error!("Can't have more than 255 parameters.");
                 }
             }
         }
-        self.consume(TokenType::RightParen, "Expect ')' after parameters.")?;
-        
-        self.consume(TokenType::LeftBrace, "Expect '{' before function body")?;
+        self.consume(
+            TokenType::RightParen,
+            "Expect ')' after parameters.",
+        )?;
+
+        self.consume(
+            TokenType::LeftBrace,
+            "Expect '{' before function body",
+        )?;
         let body = self.block_stmt()?;
-        Ok(Stmt::Function(FunStmt {
-            name,
-            params,
-            body,
-        }))
+        Ok(Stmt::Function(FunStmt { name, params, body }))
     }
 
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
-        let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
+        let name =
+            self.consume(TokenType::Identifier, "Expect variable name.")?;
         if matches!(self, TokenType::Equal) {
             let init = self.expression()?;
             self.consume(TokenType::Semicolon, "Expect semicolon.")?;
@@ -152,36 +162,22 @@ impl Parser {
         }
     }
 
-    // until (condition) {
-    //     body;
-    // }
-    // fn until_stmt(&mut self) -> Result<Stmt, LoxError> {
-    //     self.consume(TokenType::LeftParen, "Expect '(' after 'until'.")?;
-    //     let condition = self.expression()?; // Boolean(bool)
-    //     self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
-    //     let body = self.statement()?; 
-    //     Ok(Stmt::While(WhileStmt {
-    //         condition  
-    //         body: Box::new(body),
-    //     }))
-    // }
-            
     fn return_stmt(&mut self) -> Result<Stmt, LoxError> {
         let keyword = self.previous();
         let mut value = None;
         if !self.check(TokenType::Semicolon) {
             value = Some(self.expression()?);
         }
-        self.consume(TokenType::Semicolon, "Expect ';' after return value.")?;
-        Ok(Stmt::Return(ReturnStmt {
-            keyword,
-            value,
-        }))
+        self.consume(
+            TokenType::Semicolon,
+            "Expect ';' after return value.",
+        )?;
+        Ok(Stmt::Return(ReturnStmt { keyword, value }))
     }
 
     fn for_stmt(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'for'.")?;
-        
+
         let init;
         if matches!(self, TokenType::Semicolon) {
             init = None;
@@ -190,34 +186,40 @@ impl Parser {
         } else {
             init = Some(self.expression_stmt()?);
         }
-        
+
         let mut condition = None;
         if !self.check(TokenType::Semicolon) {
             condition = Some(self.expression()?);
         }
-        self.consume(TokenType::Semicolon, "Expect ';' after loop condition.")?;
-        
+        self.consume(
+            TokenType::Semicolon,
+            "Expect ';' after loop condition.",
+        )?;
+
         let mut increment = None;
         if !self.check(TokenType::RightParen) {
             increment = Some(self.expression()?);
         }
-        self.consume(TokenType::RightParen, "Expect ')' after for clauses.")?;
+        self.consume(
+            TokenType::RightParen,
+            "Expect ')' after for clauses.",
+        )?;
         let mut body = self.statement()?;
         if let Some(increment_expression) = increment {
             let increment_stmt = Stmt::Expression(ExpressionStmt {
-                expr: increment_expression, 
+                expr: increment_expression,
             });
             body = Stmt::Block(BlockStmt {
-                statements: vec![body, increment_stmt]
+                statements: vec![body, increment_stmt],
             });
         }
-        body = Stmt::While(WhileStmt{
+        body = Stmt::While(WhileStmt {
             condition: condition.unwrap_or(Expr::Boolean(true)),
-            body: Box::new(body)
+            body: Box::new(body),
         });
         if let Some(init_statement) = init {
             body = Stmt::Block(BlockStmt {
-                statements: vec![init_statement, body]
+                statements: vec![init_statement, body],
             });
         }
         Ok(body)
@@ -226,7 +228,10 @@ impl Parser {
     fn while_stmt(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
         let condition = self.expression()?;
-        self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
+        self.consume(
+            TokenType::RightParen,
+            "Expect ')' after condition.",
+        )?;
         let body = self.statement()?;
         Ok(Stmt::While(WhileStmt {
             condition,
@@ -237,7 +242,10 @@ impl Parser {
     fn if_stmt(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
         let condition = self.expression()?;
-        self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
+        self.consume(
+            TokenType::RightParen,
+            "Expect ')' after condition.",
+        )?;
         let then_branch = self.statement()?;
         let mut else_branch = None;
         if matches!(self, TokenType::Else) {
@@ -392,8 +400,9 @@ impl Parser {
                 args.push(self.expression()?);
             }
         }
-        let paren = self.consume(TokenType::RightParen,
-                                 "Expect ')' after arguments."
+        let paren = self.consume(
+            TokenType::RightParen,
+            "Expect ')' after arguments.",
         )?;
         Ok(Expr::Call(CallExpr {
             callee: Box::new(callee),
@@ -401,7 +410,7 @@ impl Parser {
             args,
         }))
     }
-            
+
     fn primary(&mut self) -> Result<Expr, LoxError> {
         if matches!(self, TokenType::Nil) {
             Ok(Expr::Nil)
@@ -411,14 +420,18 @@ impl Parser {
             Ok(Expr::Boolean(true))
         } else if matches!(self, TokenType::Number) {
             let num_str = self.previous().lexeme;
-            let num = num_str.parse::<f64>().expect("Cannot convert str to f64");
+            let num =
+                num_str.parse::<f64>().expect("Cannot convert str to f64");
             Ok(Expr::Number(NumberExpr { value: num }))
         } else if matches!(self, TokenType::StrLit) {
             let str_lit = self.previous().lexeme;
             Ok(Expr::String(str_lit))
         } else if matches!(self, TokenType::LeftParen) {
             let expr = self.expression()?;
-            self.consume(TokenType::RightParen, "Expect ')' after expression")?;
+            self.consume(
+                TokenType::RightParen,
+                "Expect ')' after expression",
+            )?;
             Ok(Expr::Group(GroupExpr {
                 expr: Box::new(expr),
             }))
