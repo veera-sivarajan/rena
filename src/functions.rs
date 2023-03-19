@@ -18,11 +18,11 @@ pub trait Callable {
 #[derive(Clone, Debug)]
 pub struct Function {
     pub declaration: FunStmt,
-    closure: Environment, // surrounding environment
+    closure: Rc<RefCell<Environment>>, // surrounding environment
 }
 
 impl Function {
-    pub fn new(declaration: FunStmt, closure: Environment) -> Function {
+    pub fn new(declaration: FunStmt, closure: Rc<RefCell<Environment>>) -> Function {
         Function { declaration, closure }
     }
 }
@@ -44,17 +44,17 @@ impl Callable for Function {
                 args.len()
             ))
         } else {
-            let mut env = Environment::with_enclosing(self.closure.frame_list.clone());
+            let mut env = Environment::with_enclosing(self.closure.clone());
             self
                 .declaration
                 .params
                 .iter()
                 .zip(args.iter()) // combines two iters into one tuple
-                .try_for_each(|(name, value)| {
+                .for_each(|(name, value)| {
                     env.define(&name.lexeme, value.clone())
-                })?;
+                });
 
-            let result = intp.block(&self.declaration.body, env);
+            let result = intp.block(&self.declaration.body, Rc::new(RefCell::new(env)));
             match result {
                 Err(LoxError::Return(value)) => Ok(value),
                 Err(LoxError::Error(msg)) => error!(msg),

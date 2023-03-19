@@ -25,13 +25,13 @@ pub enum Value {
 }
 
 pub struct Interpreter {
-    pub memory: Environment,
+    pub memory: Rc<RefCell<Environment>>,
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
-            memory: Environment::new(),
+            memory: Rc::new(RefCell::new(Environment::new())),
         }
     }
 
@@ -52,7 +52,7 @@ impl Interpreter {
             Stmt::Var(stmt) => self.var(stmt),
             Stmt::Block(stmt) => {
                 self.block(&stmt.statements,
-                           Environment::with_enclosing(self.memory.frame_list.clone()))
+                           Rc::new(RefCell::new(Environment::with_enclosing(self.memory.clone()))))
             }
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
@@ -79,7 +79,9 @@ impl Interpreter {
         let func =
             Function::new(statement.to_owned(), self.memory.clone());
         self.memory
-            .define(&statement.name.lexeme, Value::Function(func))
+            .borrow_mut()
+            .define(&statement.name.lexeme, Value::Function(func));
+        Ok(())
     }
 
     fn is_truthy(&self, object: Value) -> bool {
@@ -142,22 +144,24 @@ impl Interpreter {
     fn var(&mut self, decl: &VarStmt) -> Result<(), LoxError> {
         if let Some(init) = &decl.init {
             let value = self.evaluate(init)?;
-            self.memory.define(&decl.name.lexeme, value)
+            self.memory.borrow_mut().define(&decl.name.lexeme, value);
+            Ok(())
         } else {
-            self.memory.define(&decl.name.lexeme, Value::Nil)
+            self.memory.borrow_mut().define(&decl.name.lexeme, Value::Nil);
+            Ok(())
         }
     }
 
-    pub fn block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
-        let previous = env.frame_list.clone();
-        self.memory.frame_list = env.frame_list;
+    pub fn block(&mut self, statements: &[Stmt], env: Rc<RefCell<Environment>>) -> Result<(), LoxError> {
+        let previous = env.clone();
+        self.memory = env;
         for stmt in statements {
             self.execute(stmt).map_err(|err| {
-                self.memory.frame_list = previous.clone();
+                self.memory = previous.clone();
                 err
             })?;
         }
-        self.memory.frame_list = previous;
+        self.memory = previous;
         Ok(())
     }
 
@@ -169,14 +173,14 @@ impl Interpreter {
     }
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
-        match self.memory.fetch(&name.lexeme) {
+        match self.memory.borrow().fetch(&name.lexeme) {
             None => {
                 let msg = format!("Undeclared variable '{}'", name.lexeme);
                 error!(msg.as_str())
             }
             Some(value) => match value {
                 Value::Nil => error!("Uninitialized variable."),
-                _ => Ok(value.clone()),
+                _ => Ok(value),
             },
         }
     }
@@ -241,7 +245,7 @@ impl Interpreter {
         expression: &AssignExpr,
     ) -> Result<Value, LoxError> {
         let value = self.evaluate(&expression.value)?;
-        self.memory.assign(&expression.name.lexeme, value)
+        self.memory.borrow_mut().assign(&expression.name.lexeme, value)
     }
 
     fn group(
