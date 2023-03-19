@@ -12,6 +12,8 @@ use crate::stmt::{
 use crate::token::{Token, TokenType};
 
 use float_eq::{float_eq, float_ne};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub enum Value {
@@ -23,13 +25,13 @@ pub enum Value {
 }
 
 pub struct Interpreter {
-    pub memory: Environment,
+    pub memory: Rc<RefCell<Environment>>,
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
-            memory: Environment::new(),
+            memory: Rc::new(RefCell::new(Environment::new())),
         }
     }
 
@@ -37,9 +39,10 @@ impl Interpreter {
         &mut self,
         statements: &[Stmt],
     ) -> Result<(), LoxError> {
-        // try_for_each returns Ok(()) if none of the items in the iterator
-        // return an error on applying the closure
-        statements.iter().try_for_each(|stmt| self.execute(stmt))
+        for stmt in statements {
+            self.execute(stmt)?;
+        }
+        Ok(())
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
@@ -47,7 +50,7 @@ impl Interpreter {
             Stmt::Print(stmt) => self.print(stmt),
             Stmt::Expression(stmt) => self.expression(stmt),
             Stmt::Var(stmt) => self.var(stmt),
-            Stmt::Block(stmt) => self.block(stmt),
+            Stmt::Block(stmt) => self.block(&stmt.statements, self.memory.clone()),
             Stmt::If(stmt) => self.execute_if(stmt),
             Stmt::While(stmt) => self.execute_while(stmt),
             Stmt::Function(stmt) => self.fun_decl(stmt),
@@ -73,6 +76,7 @@ impl Interpreter {
         let func =
             Function::new(statement.to_owned(), self.memory.clone());
         self.memory
+            .borrow_mut()
             .define(&statement.name.lexeme, Value::Function(func))
     }
 
@@ -115,8 +119,8 @@ impl Interpreter {
 
     fn stringify(&self, result: Value) -> String {
         match result {
-            Value::Number(num) => format!("{}", num),
-            Value::Bool(tof) => format!("{}", tof),
+            Value::Number(num) => format!("{num}"),
+            Value::Bool(tof) => format!("{tof}"),
             Value::String(value) => value,
             Value::Nil => "nil".to_string(),
             Value::Function(fun) => {
@@ -136,17 +140,23 @@ impl Interpreter {
     fn var(&mut self, decl: &VarStmt) -> Result<(), LoxError> {
         if let Some(init) = &decl.init {
             let value = self.evaluate(init)?;
-            self.memory.define(&decl.name.lexeme, value)
+            self.memory.borrow_mut().define(&decl.name.lexeme, value)
         } else {
-            self.memory.define(&decl.name.lexeme, Value::Nil)
+            self.memory.borrow_mut().define(&decl.name.lexeme, Value::Nil)
         }
     }
 
-    fn block(&mut self, block: &BlockStmt) -> Result<(), LoxError> {
-        self.memory.new_block();
-        let result = self.interpret(&block.statements);
-        self.memory.exit_block();
-        result
+    pub fn block(&mut self, statements: &[Stmt], env: Rc<RefCell<Environment>>) -> Result<(), LoxError> {
+        let previous = env.clone();
+        self.memory = env;
+        for stmt in statements{
+            self.execute(stmt).map_err(|err| {
+                self.memory = previous.clone();
+                err
+            })?;
+        }
+        self.memory = previous;
+        Ok(())
     }
 
     fn variable(
@@ -157,7 +167,7 @@ impl Interpreter {
     }
 
     fn look_up(&self, name: Token) -> Result<Value, LoxError> {
-        match self.memory.fetch(&name.lexeme) {
+        match self.memory.borrow().fetch(&name.lexeme) {
             None => {
                 let msg = format!("Undeclared variable '{}'", name.lexeme);
                 error!(msg.as_str())
@@ -229,7 +239,7 @@ impl Interpreter {
         expression: &AssignExpr,
     ) -> Result<Value, LoxError> {
         let value = self.evaluate(&expression.value)?;
-        self.memory.assign(&expression.name.lexeme, value)
+        self.memory.borrow_mut().assign(&expression.name.lexeme, value)
     }
 
     fn group(

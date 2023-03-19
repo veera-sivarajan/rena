@@ -1,6 +1,8 @@
 use crate::err::LoxError;
 use crate::interpreter::Value;
 use std::collections::HashMap;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub struct Environment {
@@ -11,6 +13,15 @@ impl Environment {
     pub fn new() -> Environment {
         Environment {
             frame_list: vec![HashMap::new()],
+        }
+    }
+
+    pub fn with_enclosing(environment: Rc<RefCell<Environment>>) -> Environment {
+        let mut frames = vec![];
+        frames.append(&mut environment.borrow_mut().frame_list);
+        frames.push(HashMap::new());
+        Environment {
+            frame_list: frames
         }
     }
 
@@ -37,17 +48,12 @@ impl Environment {
     }
 
     pub fn fetch(&self, name: &str) -> Option<&Value> {
-        let frame = self
+        self
             .frame_list
             .iter()
             .rev() // traverse from inner scope
-            .find(|f| f.contains_key(name));
-
-        if let Some(f) = frame {
-            f.get(name)
-        } else {
-            None
-        }
+            .find(|f| f.contains_key(name))?
+            .get(name)
     }
 
     pub fn assign(
